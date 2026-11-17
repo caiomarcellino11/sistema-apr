@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema APR - Acesso do Aluno</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="topbar">
+        <h1>Sistema de Análise Preliminar de Risco (APR)</h1>
+    </header>
+
+    <main class="container">
+        <div class="card auth-wrapper">
+            <div class="tabs">
+                <button type="button" class="tab-btn active" id="tab-login" onclick="alternarAba('login')">Entrar</button>
+                <button type="button" class="tab-btn" id="tab-register" onclick="alternarAba('register')">Criar Conta</button>
+            </div>
+
+            <div id="mensagem" class="alerta"></div>
+
+            <!-- Formulário de Login -->
+            <form id="form-login" onsubmit="fazerLogin(event)">
+                <div class="form-group">
+                    <label for="login-email">E-mail</label>
+                    <input type="email" id="login-email" required placeholder="aluno@senai.br">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Senha</label>
+                    <input type="password" id="login-password" required placeholder="Sua senha">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Acessar Minhas APRs</button>
+            </form>
+
+            <!-- Formulário de Cadastro -->
+            <form id="form-register" class="hidden" onsubmit="fazerCadastro(event)">
+                <div class="form-group">
+                    <label for="reg-name">Nome Completo do Aluno</label>
+                    <input type="text" id="reg-name" required placeholder="Ex: Caio Martins">
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">E-mail</label>
+                    <input type="email" id="reg-email" required placeholder="aluno@senai.br">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Senha (mínimo 6 caracteres)</label>
+                    <input type="password" id="reg-password" minlength="6" required placeholder="Crie uma senha">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Cadastrar e Entrar</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000/api';
+
+        // Se já estiver logado, vai direto para o painel
+        if (localStorage.getItem('apr_token')) {
+            window.location.href = 'dashboard.html';
+        }
+
+        function alternarAba(aba) {
+            const msg = document.getElementById('mensagem');
+            msg.className = 'alerta';
+            msg.textContent = '';
+
+            document.getElementById('tab-login').classList.toggle('active', aba === 'login');
+            document.getElementById('tab-register').classList.toggle('active', aba === 'register');
+            document.getElementById('form-login').classList.toggle('hidden', aba !== 'login');
+            document.getElementById('form-register').classList.toggle('hidden', aba !== 'register');
+        }
+
+        function exibirErro(texto) {
+            const msg = document.getElementById('mensagem');
+            msg.className = 'alerta erro';
+            msg.textContent = texto;
+        }
+
+        async function fazerLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const resp = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const dados = await resp.json();
+
+                if (!resp.ok) {
+                    exibirErro(dados.message || 'E-mail ou senha inválidos.');
+                    return;
+                }
+
+                localStorage.setItem('apr_token', dados.token);
+                localStorage.setItem('apr_user', JSON.stringify(dados.user));
+                window.location.href = 'dashboard.html';
+            } catch (e) {
+                exibirErro('Não foi possível conectar ao servidor Laravel (verifique se php artisan serve está rodando).');
+            }
+        }
+
+        async function fazerCadastro(event) {
+            event.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const resp = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const dados = await resp.json();
+
+                if (!resp.ok) {
+                    const primeiroErro = dados.errors ? Object.values(dados.errors)[0][0] : dados.message;
+                    exibirErro(primeiroErro || 'Erro ao cadastrar.');
+                    return;
+                }
+
+                localStorage.setItem('apr_token', dados.token);
+                localStorage.setItem('apr_user', JSON.stringify(dados.user));
+                window.location.href = 'dashboard.html';
+            } catch (e) {
+                exibirErro('Não foi possível conectar ao servidor Laravel (verifique se php artisan serve está rodando).');
+            }
+        }
+    </script>
+</body>
+</html>

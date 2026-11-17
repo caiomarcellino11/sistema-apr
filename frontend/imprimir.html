@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Preliminar de Risco - APR</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background-color: #e5e7eb;
+            color: #000000;
+            padding: 18px;
+        }
+
+        .barra-acoes {
+            max-width: 210mm;
+            margin: 0 auto 14px auto;
+            background-color: #004a8d;
+            color: #ffffff;
+            padding: 10px 16px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .barra-acoes .botoes {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 7px 14px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-imprimir {
+            background-color: #ffffff;
+            color: #004a8d;
+        }
+
+        .btn-voltar {
+            background-color: #1e3a8a;
+            color: #ffffff;
+        }
+
+        /* Folha A4 Retrato fiel ao modelo SENAI */
+        .folha-apr {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 7mm;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5px;
+            table-layout: fixed;
+            border: 1.5px solid #000000;
+        }
+
+        th, td {
+            border: 1px solid #000000;
+            padding: 3px 6px;
+            font-size: 10px;
+            vertical-align: top;
+            word-wrap: break-word;
+            color: #000000;
+        }
+
+        .tabela-cabecalho td {
+            vertical-align: middle;
+        }
+
+        .bloco-logo {
+            width: 24%;
+            text-align: center;
+            padding: 6px 8px;
+        }
+
+        .bloco-titulo {
+            width: 48%;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 8px;
+        }
+
+        .bloco-unidade {
+            width: 28%;
+            font-size: 9.5px;
+            line-height: 1.32;
+            padding: 5px 8px;
+        }
+
+        .bloco-unidade strong {
+            font-size: 10.5px;
+        }
+
+        .celula-campo {
+            height: 30px;
+            padding: 2px 6px 3px 6px;
+        }
+
+        .campo-label {
+            display: block;
+            font-size: 7.5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .campo-valor {
+            font-size: 10.5px;
+            min-height: 13px;
+        }
+
+        .linha-inline {
+            padding: 5px 6px;
+            font-size: 10.5px;
+            min-height: 24px;
+            vertical-align: middle;
+        }
+
+        .faixa-titulo {
+            background-color: #e6e6e6;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9.5px;
+            text-transform: uppercase;
+            padding: 4px;
+            vertical-align: middle;
+        }
+
+        .tabela-etapas td {
+            height: 48px;
+            font-size: 9.5px;
+            line-height: 1.28;
+            padding: 4px 6px;
+        }
+
+        .col-num {
+            width: 5.5%;
+            text-align: center;
+            font-weight: bold;
+            vertical-align: middle !important;
+        }
+
+        .col-desc {
+            width: 24.5%;
+        }
+
+        .col-riscos {
+            width: 31%;
+        }
+
+        .col-medidas {
+            width: 39%;
+        }
+
+        .texto-quebra {
+            white-space: pre-line;
+        }
+
+        .tabela-executantes td {
+            height: 21px;
+            font-size: 10px;
+            vertical-align: middle;
+            padding: 2px 6px;
+        }
+
+        .tabela-responsavel td {
+            padding: 6px 8px;
+            font-size: 10.5px;
+            vertical-align: middle;
+        }
+
+        .linha-assinatura {
+            height: 32px;
+        }
+
+        .aviso-status {
+            text-align: center;
+            padding: 40px;
+            font-size: 14px;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 6mm;
+            }
+
+            body {
+                background: #ffffff;
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .barra-acoes {
+                display: none !important;
+            }
+
+            .folha-apr {
+                width: 100%;
+                min-height: auto;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="barra-acoes">
+        <span><strong>Layout Oficial APR — SENAI</strong> (Clique ao lado para salvar em PDF)</span>
+        <div class="botoes">
+            <button type="button" class="btn btn-imprimir" onclick="window.print()">Imprimir / Salvar PDF</button>
+            <button type="button" class="btn btn-voltar" onclick="voltarPainel()">Voltar ao Painel</button>
+        </div>
+    </div>
+
+    <div class="folha-apr" id="conteudo-apr">
+        <div class="aviso-status">Carregando documento oficial...</div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000/api';
+        const token = localStorage.getItem('apr_token');
+        const params = new URLSearchParams(window.location.search);
+        const aprId = params.get('id');
+
+        if (!token || !aprId) {
+            window.location.href = 'dashboard.html';
+        }
+
+        function voltarPainel() {
+            if (window.opener) {
+                window.close();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        function esc(valor) {
+            if (valor === null || valor === undefined) return '';
+            return String(valor)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        async function carregarFicha() {
+            const container = document.getElementById('conteudo-apr');
+
+            try {
+                const resp = await fetch(`${API_URL}/aprs/${aprId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!resp.ok) {
+                    container.innerHTML = '<div class="aviso-status">Não foi possível localizar esta APR.</div>';
+                    return;
+                }
+
+                const apr = await resp.json();
+                const cli = apr.cliente || {};
+
+                let dia = '&nbsp;&nbsp;&nbsp;&nbsp;';
+                let mes = '&nbsp;&nbsp;&nbsp;&nbsp;';
+                let ano = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                if (apr.data_emissao) {
+                    const partes = apr.data_emissao.split('T')[0].split('-');
+                    if (partes.length === 3) {
+                        ano = partes[0];
+                        mes = partes[1];
+                        dia = partes[2];
+                    }
+                }
+
+                const etapas = apr.etapas || [];
+                const totalLinhasEtapas = Math.max(5, etapas.length);
+                let htmlEtapas = '';
+                for (let i = 0; i < totalLinhasEtapas; i++) {
+                    const item = etapas[i];
+                    htmlEtapas += `
+                        <tr>
+                            <td class="col-num">${item ? (item.numero_etapa || i + 1) : (i + 1)}</td>
+                            <td class="col-desc texto-quebra">${item ? esc(item.descricao) : ''}</td>
+                            <td class="col-riscos texto-quebra">${item ? esc(item.riscos_envolvidos) : ''}</td>
+                            <td class="col-medidas texto-quebra">${item ? esc(item.medidas_controle) : ''}</td>
+                        </tr>
+                    `;
+                }
+
+                const executantes = apr.executantes || [];
+                const totalLinhasExec = Math.max(5, executantes.length);
+                let htmlExecutantes = '';
+                for (let i = 0; i < totalLinhasExec; i++) {
+                    const exec = executantes[i];
+                    htmlExecutantes += `
+                        <tr>
+                            <td class="col-num">${i + 1}</td>
+                            <td style="width: 44.5%;">${exec ? esc(exec.nome) : ''}</td>
+                            <td style="width: 30%;">${exec ? esc(exec.funcao) : ''}</td>
+                            <td style="width: 20%; text-align: center;">${exec ? esc(exec.matricula) : ''}</td>
+                        </tr>
+                    `;
+                }
+
+                container.innerHTML = `
+                    <!-- Cabeçalho Institucional -->
+                    <table class="tabela-cabecalho">
+                        <tr>
+                            <td class="bloco-logo">
+                                <svg width="132" height="38" viewBox="0 0 180 52" xmlns="http://www.w3.org/2000/svg" aria-label="SENAI">
+                                    <rect x="0" y="0" width="180" height="52" fill="#E30613"/>
+                                    <text x="90" y="37" fill="#FFFFFF" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-style="italic" font-size="34" letter-spacing="2" text-anchor="middle">SENAI</text>
+                                </svg>
+                            </td>
+                            <td class="bloco-titulo">
+                                ANÁLISE PRELIMINAR DE RISCO - APR
+                            </td>
+                            <td class="bloco-unidade">
+                                <strong>SENAI</strong><br>
+                                Av. Brasil, 2801.<br>
+                                Parque Res. Nardini<br>
+                                CEP: 13468-390<br>
+                                Americana - SP<br>
+                                Fone: (19) 3471-2600
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Dados do Cliente -->
+                    <table>
+                        <tr>
+                            <td colspan="12" class="celula-campo">
+                                <span class="campo-label">CLIENTE</span>
+                                <div class="campo-valor">${esc(cli.nome)}</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" class="celula-campo">
+                                <span class="campo-label">ENDEREÇO</span>
+                                <div class="campo-valor">${esc(cli.endereco)}</div>
+                            </td>
+                            <td colspan="2" class="celula-campo">
+                                <span class="campo-label">N°.</span>
+                                <div class="campo-valor">${esc(cli.numero)}</div>
+                            </td>
+                            <td colspan="3" class="celula-campo">
+                                <span class="campo-label">COMPLEMENTO</span>
+                                <div class="campo-valor">${esc(cli.complemento)}</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="celula-campo">
+                                <span class="campo-label">BAIRRO</span>
+                                <div class="campo-valor">${esc(cli.bairro)}</div>
+                            </td>
+                            <td colspan="5" class="celula-campo">
+                                <span class="campo-label">CIDADE</span>
+                                <div class="campo-valor">${esc(cli.cidade)}</div>
+                            </td>
+                            <td colspan="2" class="celula-campo">
+                                <span class="campo-label">ESTADO</span>
+                                <div class="campo-valor">${esc(cli.estado)}</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="celula-campo">
+                                <span class="campo-label">TEL. RESID.</span>
+                                <div class="campo-valor">${esc(cli.tel_residencial)}</div>
+                            </td>
+                            <td colspan="3" class="celula-campo">
+                                <span class="campo-label">TEL. CEL.</span>
+                                <div class="campo-valor">${esc(cli.tel_celular)}</div>
+                            </td>
+                            <td colspan="6" class="celula-campo">
+                                <span class="campo-label">E-MAIL</span>
+                                <div class="campo-valor">${esc(cli.email)}</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Local e Atividade -->
+                    <table>
+                        <tr>
+                            <td class="linha-inline">
+                                <strong>LOCAL:</strong> ${esc(apr.local)}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="linha-inline">
+                                <strong>ATIVIDADE:</strong> ${esc(apr.atividade)}
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Etapa da Atividade -->
+                    <table class="tabela-etapas">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="faixa-titulo">ETAPA DA ATIVIDADE</th>
+                                <th rowspan="2" class="faixa-titulo col-riscos">RISCOS ENVOLVIDOS</th>
+                                <th rowspan="2" class="faixa-titulo col-medidas">MEDIDAS DE CONTROLE DE RISCO</th>
+                            </tr>
+                            <tr>
+                                <th class="faixa-titulo col-num">N°.</th>
+                                <th class="faixa-titulo col-desc">DESCRIÇÃO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${htmlEtapas}
+                        </tbody>
+                    </table>
+
+                    <!-- Executantes dos Serviços -->
+                    <table class="tabela-executantes">
+                        <thead>
+                            <tr>
+                                <th colspan="4" class="faixa-titulo">EXECUTANTES DOS SERVIÇOS</th>
+                            </tr>
+                            <tr>
+                                <th class="faixa-titulo col-num">N°.</th>
+                                <th class="faixa-titulo" style="width: 44.5%;">NOME</th>
+                                <th class="faixa-titulo" style="width: 30%;">FUNÇÃO</th>
+                                <th class="faixa-titulo" style="width: 20%;">MATRÍCULA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${htmlExecutantes}
+                        </tbody>
+                    </table>
+
+                    <!-- Responsável Técnico -->
+                    <table class="tabela-responsavel">
+                        <thead>
+                            <tr>
+                                <th class="faixa-titulo">RESPONSÁVEL TÉCNICO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>NOME:</strong> ${esc(apr.responsavel_nome)}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="linha-assinatura">
+                                    <strong>ASSINATURA:</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>DATA:</strong> &nbsp; ${dia} &nbsp;/&nbsp; ${mes} &nbsp;/&nbsp; ${ano}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            } catch (e) {
+                container.innerHTML = '<div class="aviso-status">Erro ao conectar com o servidor Laravel.</div>';
+            }
+        }
+
+        carregarFicha();
+    </script>
+</body>
+</html>
