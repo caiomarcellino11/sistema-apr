@@ -7,10 +7,15 @@ use Illuminate\Http\Request;
 
 class ClienteController extends Controller
 {
-    public function index()
-    {
-        return response()->json(Cliente::orderBy('nome')->get());
-    }
+   public function index(Request $request)
+{
+    $clientes = $request->user()
+        ->clientes()
+        ->orderBy('nome')
+        ->get();
+
+    return response()->json($clientes);
+}
 
     public function store(Request $request)
     {
@@ -27,19 +32,27 @@ class ClienteController extends Controller
             'email'           => 'required|email|max:255',
         ]);
 
-        $cliente = Cliente::create($dados);
+       $cliente = $request->user()
+        ->clientes()
+        ->create($dados);
 
         return response()->json($cliente, 201);
     }
 
-    public function show(string $id)
-    {
-        return response()->json(Cliente::findOrFail($id));
-    }
+  public function show(Request $request, string $id)
+{
+    $cliente = $request->user()
+        ->clientes()
+        ->findOrFail($id);
+
+    return response()->json($cliente);
+}
 
     public function update(Request $request, string $id)
     {
-        $cliente = Cliente::findOrFail($id);
+       $cliente = $request->user()
+         ->clientes()
+         ->findOrFail($id);
 
         $dados = $request->validate([
             'nome'            => 'sometimes|required|string|max:255',
@@ -59,11 +72,16 @@ class ClienteController extends Controller
         return response()->json($cliente);
     }
 
-    public function destroy(string $id)
-    {
-        $cliente = Cliente::findOrFail($id);
-        $cliente->delete();
+  public function destroy(Request $request, string $id)
+{
+    $cliente = $request->user()
+        ->clientes()
+        ->findOrFail($id);
 
-        return response()->json(['mensagem' => 'Cliente excluído com sucesso.']);
-    }
+    $cliente->delete();
+
+    return response()->json([
+        'mensagem' => 'Cliente excluído com sucesso.'
+    ]);
+}
 }

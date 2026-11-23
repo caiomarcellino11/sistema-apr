@@ -7,12 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 class Cliente extends Model
 {
     protected $fillable = [
-        "nome", "endereco", "numero", "complemento", "bairro",
-        "cidade", "estado", "tel_residencial", "tel_celular", "email"
+        'nome',
+        'endereco',
+        'numero',
+        'complemento',
+        'bairro',
+        'cidade',
+        'estado',
+        'tel_residencial',
+        'tel_celular',
+        'email',
     ];
 
     public function aprs()
     {
         return $this->hasMany(Apr::class);
+    }
+
+    // Cada cliente pertence a um usuário.
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

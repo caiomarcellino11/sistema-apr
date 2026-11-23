@@ -5,28 +5,29 @@ namespace App\Http\Controllers;
 use App\Models\Apr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class AprController extends Controller
 {
     public function index(Request $request)
-    {
-        $userId = $request->user()?->id ?? $request->query('user_id');
+{
+    $aprs = $request->user()
+        ->aprs()
+        ->with(['cliente', 'etapas', 'executantes'])
+        ->orderByDesc('id')
+        ->get();
 
-        $query = Apr::with(['cliente', 'etapas', 'executantes'])
-            ->orderByDesc('id');
-
-        if ($userId) {
-            $query->where('user_id', $userId);
-        }
-
-        return response()->json($query->get());
-    }
+    return response()->json($aprs);
+}
 
     public function store(Request $request)
     {
         $dados = $request->validate([
-            'user_id'                       => 'nullable|exists:users,id',
-            'cliente_id'                    => 'required|exists:clientes,id',
+            'cliente_id' => [
+                'required',
+                 Rule::exists('clientes', 'id')
+                ->where('user_id', $request->user()->id),
+],
             'local'                         => 'required|string|max:255',
             'atividade'                     => 'required|string|max:255',
             'responsavel_nome'              => 'required|string|max:255',
@@ -43,55 +44,61 @@ class AprController extends Controller
             'executantes.*.matricula'       => 'required|string|max:50',
         ]);
 
-        $userId = $request->user()?->id ?? ($dados['user_id'] ?? null);
+$apr = DB::transaction(function () use ($dados, $request) {
+    $apr = $request->user()->aprs()->create([
+        'cliente_id' => $dados['cliente_id'],
+        'local' => $dados['local'],
+        'atividade' => $dados['atividade'],
+        'responsavel_nome' => $dados['responsavel_nome'],
+        'responsavel_crea' => $dados['responsavel_crea'],
+        'data_emissao' => $dados['data_emissao'],
+    ]);
 
-        $apr = DB::transaction(function () use ($dados, $userId) {
-            $apr = Apr::create([
-                'user_id'          => $userId,
-                'cliente_id'       => $dados['cliente_id'],
-                'local'            => $dados['local'],
-                'atividade'        => $dados['atividade'],
-                'responsavel_nome' => $dados['responsavel_nome'],
-                'responsavel_crea' => $dados['responsavel_crea'],
-                'data_emissao'     => $dados['data_emissao'],
-            ]);
+    foreach ($dados['etapas'] as $index => $etapa) {
+        $apr->etapas()->create([
+            'numero_etapa' => $etapa['numero_etapa'] ?? ($index + 1),
+            'descricao' => $etapa['descricao'],
+            'riscos_envolvidos' => $etapa['riscos_envolvidos'],
+            'medidas_controle' => $etapa['medidas_controle'],
+        ]);
+    }
 
-            foreach ($dados['etapas'] as $index => $etapa) {
-                $apr->etapas()->create([
-                    'numero_etapa'      => $etapa['numero_etapa'] ?? ($index + 1),
-                    'descricao'         => $etapa['descricao'],
-                    'riscos_envolvidos' => $etapa['riscos_envolvidos'],
-                    'medidas_controle'  => $etapa['medidas_controle'],
-                ]);
-            }
+    foreach ($dados['executantes'] as $executante) {
+        $apr->executantes()->create([
+            'nome' => $executante['nome'],
+            'funcao' => $executante['funcao'],
+            'matricula' => $executante['matricula'],
+        ]);
+    }
 
-            foreach ($dados['executantes'] as $executante) {
-                $apr->executantes()->create([
-                    'nome'      => $executante['nome'],
-                    'funcao'    => $executante['funcao'],
-                    'matricula' => $executante['matricula'],
-                ]);
-            }
-
-            return $apr;
-        });
+    return $apr;
+});
 
         return response()->json($apr->load(['cliente', 'etapas', 'executantes']), 201);
     }
 
-    public function show(string $id)
-    {
-        $apr = Apr::with(['cliente', 'etapas', 'executantes'])->findOrFail($id);
+ public function show(Request $request, string $id)
+{
+    $apr = $request->user()
+        ->aprs()
+        ->with(['cliente', 'etapas', 'executantes'])
+        ->findOrFail($id);
 
-        return response()->json($apr);
-    }
-
+    return response()->json($apr);
+}
     public function update(Request $request, string $id)
     {
-        $apr = Apr::findOrFail($id);
+        $apr = $request->user()
+          ->aprs()
+          ->findOrFail($id);
 
         $dados = $request->validate([
-            'cliente_id'                    => 'sometimes|required|exists:clientes,id',
+            'cliente_id' => [
+                'sometimes',
+                'required',
+                 Rule::exists('clientes', 'id')
+                ->where('user_id', $request->user()->id),
+],
             'local'                         => 'sometimes|required|string|max:255',
             'atividade'                     => 'sometimes|required|string|max:255',
             'responsavel_nome'              => 'sometimes|required|string|max:255',
@@ -138,11 +145,16 @@ class AprController extends Controller
         return response()->json($apr->load(['cliente', 'etapas', 'executantes']));
     }
 
-    public function destroy(string $id)
-    {
-        $apr = Apr::findOrFail($id);
-        $apr->delete();
+   public function destroy(Request $request, string $id)
+{
+    $apr = $request->user()
+        ->aprs()
+        ->findOrFail($id);
 
-        return response()->json(['mensagem' => 'APR excluída com sucesso.']);
-    }
+    $apr->delete();
+
+    return response()->json([
+        'mensagem' => 'APR excluída com sucesso.'
+    ]);
+}
 }

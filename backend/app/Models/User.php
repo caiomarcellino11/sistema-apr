@@ -36,4 +36,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Apr::class);
     }
+    public function clientes()
+{
+    return $this->hasMany(Cliente::class);
+}
+
 }
