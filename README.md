@@ -1,370 +1,689 @@
 
-<div align="center">
-
 # 🛡️ Sistema de Gestão e Emissão de APR
 
-### Plataforma de Gerenciamento de Análises Preliminares de Risco
+**Sistema web para cadastro, gerenciamento e emissão de Análises Preliminares de Risco (APR).**
 
-**Organização de clientes, atividades, riscos, medidas de controle e executantes por meio de uma API REST segura.**
+![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow)
+![PHP](https://img.shields.io/badge/PHP-8.3+-777BB4)
+![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1)
+![JavaScript](https://img.shields.io/badge/JavaScript-Frontend-F7DF1E)
 
-<p>
-  <img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP"/>
-  <img src="https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel"/>
-  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
-  <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite"/>
-  <img src="https://img.shields.io/badge/PHPUnit-366488?style=for-the-badge&logo=php&logoColor=white" alt="PHPUnit"/>
-</p>
-
-<p>
-  <img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-yellow?style=flat-square" alt="Status"/>
-  <img src="https://img.shields.io/badge/Testes-20%20Aprovados-brightgreen?style=flat-square" alt="Testes"/>
-  <img src="https://img.shields.io/badge/Assertions-55-success?style=flat-square" alt="Assertions"/>
-  <img src="https://img.shields.io/badge/Arquitetura-API%20REST-blue?style=flat-square" alt="API REST"/>
-</p>
-
-</div>
+> **Última atualização:** 25/11/2026  
+> **Status:** Em desenvolvimento  
+> **Projeto:** Sistema APR — SENAI Americana
 
 ---
 
 ## 📖 Sobre o projeto
 
-O **Sistema de Gestão e Emissão de APR** é uma aplicação voltada ao gerenciamento das informações utilizadas em uma **Análise Preliminar de Risco (APR)**.
+O Sistema de Gestão e Emissão de APR é uma aplicação web desenvolvida para facilitar a elaboração, organização e emissão de Análises Preliminares de Risco.
 
-O objetivo é organizar as informações de clientes, atividades, etapas operacionais, riscos envolvidos, medidas de controle e profissionais executantes.
+Seu objetivo é oferecer uma plataforma na qual usuários possam cadastrar clientes, registrar atividades, identificar riscos, definir medidas de controle e gerar documentos de APR.
 
-Atualmente, o projeto conta com um **Back-End desenvolvido em Laravel**, utilizando autenticação, autorização por usuário, banco de dados relacional e testes automatizados.
+O projeto também busca reduzir o preenchimento repetitivo por meio de catálogos de riscos e da reutilização de informações cadastradas anteriormente.
 
-A evolução do Front-End e a geração de documentos APR fazem parte das próximas etapas de desenvolvimento.
+O sistema está sendo desenvolvido com foco em:
 
----
+- Segurança da informação;
+- Organização dos registros;
+- Facilidade de preenchimento;
+- Reutilização de informações;
+- Experiência do usuário;
+- Manutenção e escalabilidade.
 
-## ✨ Funcionalidades
-
-- 👥 **Gestão de clientes:** cadastro, consulta, edição, listagem e exclusão.
-- 📋 **Gestão de APRs:** criação, visualização, atualização e exclusão de análises.
-- 🧩 **Etapas das atividades:** registro de etapas, riscos e medidas de controle.
-- 👷 **Gestão de executantes:** identificação dos profissionais envolvidos nas atividades.
-- 🔗 **Relacionamento entre APRs e clientes:** associação das análises aos clientes cadastrados.
-- 🔐 **Autenticação:** proteção das rotas utilizando Laravel Sanctum.
-- 🛡️ **Autorização:** isolamento dos registros entre diferentes usuários.
-- ✅ **Validação de dados:** proteção contra associações indevidas entre APRs e clientes.
-- 🔄 **Transações:** utilização de transações para manter a consistência das operações.
+> **Importante:** os riscos, EPIs e medidas de controle sugeridos pelo sistema precisam ser avaliados conforme a atividade real, as condições do ambiente e as normas aplicáveis. O preenchimento automático não substitui uma avaliação técnica de segurança.
 
 ---
 
 ## 🛠️ Tecnologias utilizadas
 
-<div align="center">
+### Back-End
 
-| Back-End | Banco de Dados | Ferramentas |
-|:---:|:---:|:---:|
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/php/php-original.svg" width="40" alt="PHP"/> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg" width="40" alt="PostgreSQL"/> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" width="40" alt="Git"/> |
-| **PHP** | **PostgreSQL** | **Git** |
-| <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/laravel/laravel-original.svg" width="40" alt="Laravel"/> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/sqlite/sqlite-original.svg" width="40" alt="SQLite"/> | <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/composer/composer-original.svg" width="40" alt="Composer"/> |
-| **Laravel** | **SQLite (testes)** | **Composer** |
+- PHP 8.3 ou superior;
+- Laravel;
+- Laravel Sanctum;
+- Eloquent ORM;
+- API REST;
+- Composer.
 
-</div>
+### Front-End
 
-**Outras tecnologias:**
+- HTML5;
+- CSS3;
+- JavaScript;
+- Fetch API.
 
-- Laravel Sanctum
-- Eloquent ORM
-- PHPUnit
-- API REST
-- Git e GitHub
+### Banco de dados
+
+- PostgreSQL;
+- SQLite para testes automatizados;
+- Migrations e Seeders do Laravel.
+
+### Ferramentas
+
+- Visual Studio Code;
+- Git e GitHub;
+- PowerShell;
+- Composer;
+- Live Server;
+- PHPUnit.
 
 ---
 
-## 🧱 Estrutura do projeto
+## 📂 Estrutura do projeto
 
 ```text
 sistema-apr/
+│
+├── README.md
 │
 ├── backend/
 │   ├── app/
 │   │   ├── Http/
 │   │   │   └── Controllers/
 │   │   │       ├── AprController.php
-│   │   │       └── ClienteController.php
+│   │   │       ├── AuthController.php
+│   │   │       ├── ClienteController.php
+│   │   │       └── CatalogoRiscoController.php
 │   │   │
 │   │   └── Models/
 │   │       ├── Apr.php
 │   │       ├── Cliente.php
 │   │       ├── EtapaApr.php
 │   │       ├── ExecutanteApr.php
+│   │       ├── CatalogoRisco.php
 │   │       └── User.php
 │   │
 │   ├── database/
-│   │   └── migrations/
+│   │   ├── migrations/
+│   │   └── seeders/
+│   │       └── CatalogoRiscoSeeder.php
 │   │
 │   ├── routes/
+│   │   └── api.php
 │   │
 │   ├── tests/
-│   │   └── Feature/
-│   │       ├── AprAuthorizationTest.php
-│   │       ├── ClienteAuthorizationTest.php
-│   │       ├── DatabaseConfigurationTest.php
-│   │       └── DatabaseMigrationTest.php
 │   │
-│   └── .env.example
+│   ├── .env.example
+│   ├── artisan
+│   └── composer.json
 │
-└── README.md
+└── frontend/
+    ├── index.html
+    ├── dashboard.html
+    ├── imprimir.html
+    └── style.css
 ```
 
 ---
 
-## 🌐 Endpoints da API
+## ✅ Funcionalidades desenvolvidas
 
-As rotas de clientes e APRs são protegidas pelo middleware **`auth:sanctum`**.
+### 1. Autenticação de usuários
 
-### 👥 Clientes
+O sistema possui autenticação utilizando Laravel Sanctum.
 
-| Método HTTP | Endpoint | Descrição |
-|---|---|---|
-| `GET` | `/api/clientes` | Listar os próprios clientes |
-| `POST` | `/api/clientes` | Cadastrar cliente |
-| `GET` | `/api/clientes/{id}` | Consultar cliente |
-| `PUT / PATCH` | `/api/clientes/{id}` | Atualizar cliente |
-| `DELETE` | `/api/clientes/{id}` | Excluir cliente |
+Funcionalidades:
 
-### 📋 APRs
+- Cadastro de usuários;
+- Login;
+- Autenticação por token;
+- Logout;
+- Proteção de rotas;
+- Identificação do usuário autenticado.
 
-| Método HTTP | Endpoint | Descrição |
-|---|---|---|
-| `GET` | `/api/aprs` | Listar as próprias APRs |
-| `POST` | `/api/aprs` | Cadastrar APR |
-| `GET` | `/api/aprs/{id}` | Consultar APR |
-| `PUT / PATCH` | `/api/aprs/{id}` | Atualizar APR |
-| `DELETE` | `/api/aprs/{id}` | Excluir APR |
+As informações de clientes e APRs são vinculadas ao usuário responsável.
 
-### 📡 Respostas HTTP
+### 2. Gerenciamento de clientes
 
-| Código | Significado |
-|---|---|
-| `200` | Operação realizada com sucesso |
-| `201` | Recurso criado |
-| `401` | Usuário não autenticado |
-| `404` | Recurso não encontrado ou não autorizado por propriedade |
-| `422` | Erro de validação |
+Implementação de operações CRUD:
+
+- Cadastrar clientes;
+- Listar clientes;
+- Consultar informações;
+- Atualizar cadastros;
+- Excluir clientes.
+
+Cada usuário autenticado acessa apenas os clientes permitidos para sua conta.
+
+### 3. Gerenciamento de APRs
+
+O sistema permite:
+
+- Criar APRs;
+- Listar APRs;
+- Consultar registros;
+- Atualizar informações;
+- Excluir APRs;
+- Associar clientes;
+- Cadastrar etapas;
+- Registrar executantes;
+- Informar riscos e EPIs.
+
+### 4. Etapas e executantes
+
+Cada APR pode conter etapas com informações específicas.
+
+Entre os campos utilizados estão:
+
+- Descrição da etapa;
+- Riscos envolvidos;
+- EPIs obrigatórios;
+- Medidas de controle;
+- Nome dos executantes;
+- Função;
+- Matrícula.
+
+### 5. Catálogo automático de riscos e EPIs
+
+Foi implementado um catálogo inicial de modelos.
+
+Atualmente, existem seis modelos cadastrados:
+
+1. Manutenção e inspeção elétrica;
+2. Trabalho em altura;
+3. Corte e soldagem;
+4. Operação de máquinas e equipamentos;
+5. Manuseio de produtos químicos;
+6. Movimentação de cargas.
+
+Os registros são armazenados no PostgreSQL.
+
+A contagem do catálogo foi confirmada durante o desenvolvimento:
+
+```text
+CatalogoRisco::count() = 6
+```
+
+A integração do catálogo com o formulário deve continuar sendo testada.
+
+### 6. Reutilização de dados de APRs anteriores
+
+Foi preparada uma funcionalidade para selecionar uma APR anterior e aproveitar suas informações.
+
+Campos previstos para preenchimento:
+
+- Cliente;
+- Local;
+- Atividade;
+- Nome do responsável;
+- Registro profissional.
+
+Os campos continuam editáveis.
+
+**Situação:** código preparado; integração ainda precisa ser validada no navegador.
+
+### 7. Impressão da APR
+
+O arquivo `imprimir.html` apresenta o documento para impressão.
+
+O usuário pode utilizar o recurso do navegador para imprimir ou salvar em PDF.
+
+**Observação:** atualmente, essa funcionalidade utiliza a impressão do navegador, não um gerador de PDF no Back-End.
 
 ---
 
-## 🔒 Segurança e autorização
+## 🔐 Segurança implementada
 
-O sistema implementa mecanismos para garantir que cada usuário tenha acesso apenas às informações pertencentes à sua conta.
+O Back-End possui:
 
-### Autenticação
+- Autenticação com Laravel Sanctum;
+- Middleware `auth:sanctum`;
+- Isolamento de APRs por usuário;
+- Isolamento de clientes por usuário;
+- Validação da propriedade dos clientes;
+- Validação de entradas;
+- Uso do Eloquent ORM.
 
-As rotas protegidas utilizam o **Laravel Sanctum**.
+### Segurança contra XSS
 
-### Isolamento de registros
+Durante os testes manuais, foi identificada execução indevida de JavaScript inserido em um formulário.
 
-Os relacionamentos do Eloquent permitem buscar registros associados ao usuário autenticado:
+Foram preparadas correções nos arquivos HTML para evitar interpretar conteúdo fornecido pelo usuário como código executável.
 
-```php
-$clientes = $request->user()
-    ->clientes()
-    ->get();
+Entre as técnicas utilizadas estão:
+
+```javascript
+elemento.textContent = valor;
 ```
 
-```php
-$aprs = $request->user()
-    ->aprs()
-    ->get();
-```
+E o escape de conteúdo ao construir HTML.
 
-### Proteção contra acesso indevido
+**Pendente:** executar novos testes para confirmar que todos os campos e a impressão estão protegidos.
 
-O sistema restringe:
+### Melhorias de segurança futuras
 
-- Consultas de clientes pertencentes a outros usuários.
-- Atualizações e exclusões não autorizadas.
-- Acesso a APRs de outras contas.
-- Associação de APRs a clientes de outro usuário.
-- Manipulação do proprietário durante o cadastro.
-
-### Integridade dos dados
-
-A tabela `clientes` possui uma chave estrangeira `user_id`, associada à tabela `users`.
-
-Essa coluna utiliza a restrição **`NOT NULL`**, impedindo clientes sem proprietário.
-
-As operações de criação e atualização das APRs utilizam transações para preservar a consistência dos dados relacionados.
+- Revisar o armazenamento dos tokens no navegador;
+- Restringir alterações do catálogo a usuários autorizados;
+- Ampliar testes de autorização;
+- Revisar validação dos formulários;
+- Implementar políticas de segurança do conteúdo;
+- Proteger a aplicação em ambiente de produção;
+- Revisar logs e tratamento de erros.
 
 ---
 
-## 🚀 Como executar o projeto
+# 🚀 Como executar em outro computador
 
-### Pré-requisitos
+## 1. Pré-requisitos
 
-- PHP compatível com o Laravel utilizado.
-- Composer.
-- PostgreSQL.
-- Extensão `pdo_pgsql` habilitada no PHP.
+Antes de iniciar, instale:
 
-### 1. Acessar o Back-End
+- PHP 8.3 ou superior;
+- Composer;
+- PostgreSQL;
+- Git;
+- Visual Studio Code;
+- Extensão Live Server, se desejado.
 
-```bash
+Confirme a instalação:
+
+```powershell
+php -v
+composer --version
+git --version
+```
+
+Verifique as extensões do PHP:
+
+```powershell
+php -m
+```
+
+O PostgreSQL exige que a extensão `pdo_pgsql` esteja habilitada.
+
+Para executar os testes com SQLite, também serão necessárias as extensões correspondentes.
+
+## 2. Baixar o projeto
+
+Se tiver acesso ao repositório:
+
+```powershell
+git clone https://github.com/caiomarcellino11/sistema-apr.git
+```
+
+Entre no diretório:
+
+```powershell
+cd sistema-apr
+```
+
+Depois:
+
+```powershell
 cd backend
 ```
 
-### 2. Instalar as dependências
+Se o repositório estiver privado, utilize uma conta autorizada ou uma cópia ZIP do projeto.
 
-```bash
+## 3. Instalar dependências
+
+Execute:
+
+```powershell
 composer install
 ```
 
-### 3. Configurar o ambiente
+Esse comando instala as dependências definidas no projeto.
 
-No PowerShell:
+## 4. Configurar o ambiente
+
+Crie o arquivo `.env` a partir do exemplo:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Configure o banco de dados no arquivo `.env`:
+Configure as informações do banco de dados:
 
 ```dotenv
+APP_NAME="Sistema APR"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
+
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
 DB_DATABASE=nome_do_banco
-DB_USERNAME=usuario_do_banco
-DB_PASSWORD=senha_local
+DB_USERNAME=usuario
+DB_PASSWORD=senha
 ```
 
-### 4. Gerar a chave da aplicação
+Substitua pelos dados do seu PostgreSQL.
 
-```bash
+**Nunca publique o arquivo `.env` no GitHub.**
+
+Para instalações novas, execute:
+
+```powershell
 php artisan key:generate
 ```
 
-### 5. Executar as migrations
+Depois:
 
-```bash
+```powershell
+php artisan config:clear
+```
+
+Em instalações existentes, preserve a `APP_KEY` original quando ela for necessária para dados já criptografados.
+
+## 5. Configurar o banco de dados
+
+Crie um banco PostgreSQL para o projeto.
+
+Para consultar o estado das migrations:
+
+```powershell
+php artisan migrate:status
+```
+
+Em um banco novo, após conferir a configuração, execute:
+
+```powershell
 php artisan migrate
 ```
 
-> [!WARNING]
-> Evite executar `php artisan migrate:fresh` em bancos com dados importantes, pois esse comando recria as tabelas e exclui seus registros.
+**Atenção:** não utilize os comandos abaixo em um banco com informações que deseja preservar:
 
-### 6. Iniciar o servidor
-
-```bash
-php artisan serve
+```text
+php artisan migrate:fresh
+php artisan migrate:refresh
+php artisan db:wipe
 ```
 
-Endereço padrão:
+Eles podem eliminar dados existentes.
+
+### Transferência entre computadores
+
+Clonar o repositório não transfere os registros PostgreSQL.
+
+Para continuar utilizando os mesmos dados, será necessário:
+
+- Conectar ao mesmo banco autorizado; ou
+- Criar e restaurar um backup do PostgreSQL.
+
+Não execute migrations destrutivas no banco original.
+
+## 6. Carregar o catálogo de riscos
+
+Execute:
+
+```powershell
+php artisan db:seed --class=CatalogoRiscoSeeder
+```
+
+Para verificar os registros:
+
+```powershell
+php artisan tinker --execute="dump(\App\Models\CatalogoRisco::count());"
+```
+
+O catálogo inicial possui seis modelos.
+
+## 7. Iniciar o Laravel
+
+Execute:
+
+```powershell
+php artisan serve --host=127.0.0.1 --port=8000
+```
+
+Endereço esperado:
 
 ```text
 http://127.0.0.1:8000
 ```
 
+Mantenha esse terminal aberto.
+
+## 8. Iniciar o Front-End
+
+Abra a pasta `frontend` no VS Code.
+
+Com a extensão Live Server, abra:
+
+```text
+index.html
+```
+
+O endereço poderá ser:
+
+```text
+http://127.0.0.1:5500/frontend/index.html
+```
+
+A URL depende da pasta utilizada como raiz no Live Server.
+
+O Front-End utiliza a API Laravel:
+
+```javascript
+const API_URL = 'http://127.0.0.1:8000/api';
+```
+
+Se os servidores estiverem em máquinas diferentes, será necessário configurar corretamente a conexão de rede.
+
+## 9. Verificar o sistema
+
+Após iniciar:
+
+- [ ] A tela de login abre;
+- [ ] O cadastro funciona;
+- [ ] O login funciona;
+- [ ] Clientes são carregados;
+- [ ] APRs são carregadas;
+- [ ] O catálogo apresenta os modelos;
+- [ ] O histórico apresenta APRs anteriores;
+- [ ] Os formulários permitem edição manual;
+- [ ] A impressão funciona;
+- [ ] Não existe execução indevida de JavaScript;
+- [ ] Os registros existentes foram preservados.
+
 ---
 
-## 🧪 Testes automatizados
+# 🧪 Testes automatizados
 
-O projeto utiliza **PHPUnit** para validar o funcionamento da aplicação.
+O projeto utiliza PHPUnit.
 
-O ambiente de testes está configurado para utilizar **SQLite em memória**, mantendo os testes isolados do PostgreSQL da aplicação.
+Para executar:
 
-### Executar todos os testes
-
-```bash
+```powershell
 php artisan test
 ```
 
-### Testar autorização das APRs
+Os testes incluem verificações de autenticação e autorização.
 
-```bash
-php artisan test tests/Feature/AprAuthorizationTest.php
+Resultado histórico registrado durante o desenvolvimento:
+
+```text
+20 testes aprovados
+55 assertions
 ```
 
-### Testar autorização dos clientes
-
-```bash
-php artisan test tests/Feature/ClienteAuthorizationTest.php
-```
-
-### 📊 Resultados registrados
-
-<div align="center">
-
-| ✅ Testes aprovados | 🎯 Assertions | ❌ Falhas |
-|:---:|:---:|:---:|
-| **20** | **55** | **0** |
-
-**Última execução registrada: 23/11/2026**
-
-</div>
-
-Os testes incluem verificações de autenticação, autorização, isolamento de registros, associações entre clientes e APRs e integridade do banco de dados.
+Esse resultado não substitui a execução de novos testes após as alterações recentes.
 
 ---
 
-## 🗺️ Roadmap do projeto
+# 🗺️ Roadmap — Próximas melhorias
 
-### ✅ Funcionalidades implementadas
+## Fase 1 — Estabilização e segurança
 
-- [x] API REST para gerenciamento de clientes.
-- [x] API REST para gerenciamento de APRs.
-- [x] Relacionamentos entre usuários, clientes e APRs.
-- [x] Cadastro de etapas e executantes.
-- [x] Autenticação com Laravel Sanctum.
-- [x] Autorização individual por usuário.
-- [x] Validação da propriedade dos clientes.
-- [x] Proteção contra alterações indevidas.
-- [x] Migrations para integridade dos dados.
-- [x] Testes automatizados de segurança.
+**Prioridade: alta**
 
-### 🚧 Melhorias planejadas
+- [ ] Confirmar a correção de XSS;
+- [ ] Testar a impressão com dados especiais;
+- [ ] Validar o histórico de APRs;
+- [ ] Confirmar que o catálogo carrega corretamente;
+- [ ] Revisar permissões de alteração dos modelos;
+- [ ] Executar todos os testes automatizados.
 
-- [ ] Modernização do Front-End.
-- [ ] Dashboard com indicadores e informações organizadas.
-- [ ] Interface responsiva para computadores e dispositivos móveis.
-- [ ] Melhorias nos formulários de cadastro e edição.
-- [ ] Mensagens de sucesso e tratamento visual de erros.
-- [ ] Evolução da experiência de navegação.
-- [ ] Geração e exportação de documentos APR.
-- [ ] Ampliação da cobertura de testes.
+**Objetivo:** garantir que as funcionalidades atuais estejam estáveis antes de ampliar o projeto.
 
 ---
 
-## 🎯 Objetivo do desenvolvimento
+## Fase 2 — Modernização visual
 
-Este projeto tem como objetivo aplicar conhecimentos de **Desenvolvimento de Sistemas e Engenharia de Software** em uma aplicação com regras de negócio, persistência de dados e mecanismos de segurança.
+**Prioridade: alta**
 
-Durante seu desenvolvimento, são trabalhados conceitos como:
+Melhorar o design e a experiência do usuário.
 
-- Programação Back-End.
-- Arquitetura de APIs REST.
-- Orientação a Objetos.
-- Modelagem de banco de dados.
-- Autenticação e autorização.
-- Segurança de aplicações.
-- Testes automatizados.
-- Organização e manutenção de código.
+### Dashboard
+
+- [ ] Criar um painel mais moderno;
+- [ ] Melhorar menus e navegação;
+- [ ] Adicionar cartões informativos;
+- [ ] Exibir quantidade de clientes;
+- [ ] Exibir quantidade de APRs;
+- [ ] Adicionar pesquisa de APRs;
+- [ ] Implementar filtros e ordenação;
+- [ ] Melhorar mensagens de erro e sucesso.
+
+### Formulários
+
+- [ ] Organizar o cadastro em etapas;
+- [ ] Melhorar espaçamento e tipografia;
+- [ ] Criar componentes reutilizáveis;
+- [ ] Melhorar campos de seleção;
+- [ ] Adicionar indicadores de carregamento;
+- [ ] Tornar a interface responsiva.
+
+### Visualização da APR
+
+- [ ] Melhorar o modelo de impressão;
+- [ ] Organizar a apresentação dos riscos;
+- [ ] Destacar os EPIs e medidas de controle;
+- [ ] Melhorar o cabeçalho;
+- [ ] Revisar quebras de página;
+- [ ] Ajustar o documento para formato A4.
+
+**Objetivo:** criar uma experiência mais profissional e intuitiva.
 
 ---
 
-## 🔐 Boas práticas
+## Fase 3 — Expansão do catálogo de riscos e EPIs
 
-- Não versionar arquivos `.env`.
-- Não publicar credenciais ou chaves reais.
-- Utilizar variáveis de ambiente.
-- Validar os dados recebidos pela API.
-- Restringir operações aos usuários autorizados.
-- Executar testes antes de publicar alterações.
-- Manter migrations e documentação atualizadas.
+**Prioridade: alta**
+
+Ampliar as opções disponíveis para preenchimento automático.
+
+### Novas funcionalidades
+
+- [ ] Adicionar mais modelos de atividades;
+- [ ] Organizar modelos por categoria;
+- [ ] Criar pesquisa por nome;
+- [ ] Permitir selecionar vários modelos;
+- [ ] Exibir uma prévia antes do preenchimento;
+- [ ] Evitar duplicação de informações;
+- [ ] Manter campos totalmente editáveis;
+- [ ] Criar modelos favoritos;
+- [ ] Permitir modelos personalizados por usuário.
+
+### Exemplos de atividades para expansão
+
+- Limpeza e organização de ambientes;
+- Inspeção de equipamentos;
+- Manutenção preventiva;
+- Armazenamento de materiais;
+- Transporte interno;
+- Montagem de componentes;
+- Desmontagem de equipamentos;
+- Inspeções de rotina;
+- Atividades de manutenção predial.
+
+**Importante:** os riscos e controles de cada modelo deverão ser revisados tecnicamente antes de disponibilização para uso real.
+
+**Objetivo:** reduzir o preenchimento manual sem comprometer a análise de segurança.
 
 ---
 
-<div align="center">
+## Fase 4 — Preenchimento inteligente
 
-### 🛡️ Sistema de Gestão e Emissão de APR
+**Prioridade: média**
 
-**Desenvolvimento de Sistemas • Laravel • PostgreSQL • API REST**
+Ampliar o reaproveitamento de informações já registradas.
 
-<sub>Projeto em desenvolvimento — documentação atualizada conforme a evolução da aplicação.</sub>
+### Funcionalidades planejadas
 
-</div>
+- [ ] Selecionar responsáveis utilizados anteriormente;
+- [ ] Recuperar executantes cadastrados;
+- [ ] Reutilizar funções e matrículas;
+- [ ] Sugerir locais frequentes;
+- [ ] Recuperar atividades anteriores;
+- [ ] Criar modelos favoritos de APR;
+- [ ] Permitir duplicar uma APR.
+
+### Duplicação de APR
+
+O usuário poderá selecionar uma APR existente e criar um novo documento baseado nela.
+
+Regras:
+
+1. A APR original será preservada;
+2. Uma nova APR será criada;
+3. O usuário poderá editar os campos;
+4. Datas e responsáveis precisarão ser revisados;
+5. Riscos e EPIs deverão ser reavaliados;
+6. Nenhum registro anterior será alterado automaticamente.
+
+**Objetivo:** acelerar o trabalho de usuários que executam atividades semelhantes.
+
+---
+
+## Fase 5 — Segurança e qualidade
+
+**Prioridade: alta antes de publicação**
+
+- [ ] Revisar autenticação e armazenamento de tokens;
+- [ ] Implementar autorização administrativa;
+- [ ] Melhorar tratamento de erros;
+- [ ] Ampliar testes de API;
+- [ ] Realizar testes de segurança;
+- [ ] Revisar acessibilidade;
+- [ ] Preparar backups;
+- [ ] Configurar HTTPS;
+- [ ] Preparar implantação em servidor adequado.
+
+---
+
+# 🔜 Como continuar o projeto
+
+Ao retornar ao desenvolvimento, seguir esta ordem:
+
+1. Testar os arquivos HTML atualizados;
+2. Confirmar que o XSS foi corrigido;
+3. Validar o preenchimento pelo histórico;
+4. Melhorar o visual do dashboard;
+5. Reorganizar os formulários;
+6. Ampliar o catálogo de riscos e EPIs;
+7. Adicionar pesquisa e categorias;
+8. Implementar reutilização de executantes;
+9. Criar a funcionalidade de duplicar APR;
+10. Executar testes e atualizar a documentação.
+
+---
+
+## ⚠️ Cuidados durante o desenvolvimento
+
+- Fazer backup antes de alterações importantes;
+- Não excluir dados antigos sem necessidade;
+- Não publicar arquivos `.env`;
+- Não compartilhar credenciais;
+- Utilizar dados fictícios nos testes;
+- Revisar a segurança do Front-End;
+- Executar os testes após mudanças;
+- Não utilizar modelos automáticos como substitutos de uma análise técnica.
+
+---
+
+## 📌 Status atual
+
+O projeto possui uma estrutura funcional de API REST, autenticação, gerenciamento de clientes e APRs, catálogo inicial e interface para impressão.
+
+As melhorias recentes de proteção contra XSS e reutilização de dados anteriores ainda precisam de validação completa no navegador.
+
+As próximas prioridades serão **modernizar a interface** e **expandir o preenchimento automático de riscos e EPIs**.
+
+---
+
+**Sistema APR — Projeto educacional em desenvolvimento.**

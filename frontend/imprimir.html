@@ -247,7 +247,9 @@
         const params = new URLSearchParams(window.location.search);
         const aprId = params.get('id');
 
-        if (!token || !aprId) {
+        const aprIdValido = Boolean(token && aprId && /^[0-9]+$/.test(aprId));
+
+        if (!aprIdValido) {
             window.location.href = 'dashboard.html';
         }
 
@@ -264,14 +266,16 @@
             return String(valor)
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         async function carregarFicha() {
             const container = document.getElementById('conteudo-apr');
 
             try {
-                const resp = await fetch(`${API_URL}/aprs/${aprId}`, {
+                const resp = await fetch(`${API_URL}/aprs/${encodeURIComponent(aprId)}`, {
                     headers: {
                         'Accept': 'application/json',
                         'Authorization': `Bearer ${token}`
@@ -290,11 +294,13 @@
                 let mes = '&nbsp;&nbsp;&nbsp;&nbsp;';
                 let ano = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                 if (apr.data_emissao) {
-                    const partes = apr.data_emissao.split('T')[0].split('-');
-                    if (partes.length === 3) {
-                        ano = partes[0];
-                        mes = partes[1];
-                        dia = partes[2];
+                    // Somente uma data no formato ISO pode entrar no HTML da ficha.
+                    const data = String(apr.data_emissao).split('T')[0];
+                    const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(data);
+                    if (partes) {
+                        ano = esc(partes[1]);
+                        mes = esc(partes[2]);
+                        dia = esc(partes[3]);
                     }
                 }
 
@@ -305,7 +311,7 @@
                     const item = etapas[i];
                     htmlEtapas += `
                         <tr>
-                            <td class="col-num">${item ? (item.numero_etapa || i + 1) : (i + 1)}</td>
+                            <td class="col-num">${item && Number.isSafeInteger(Number(item.numero_etapa)) && Number(item.numero_etapa) > 0 ? Number(item.numero_etapa) : (i + 1)}</td>
                             <td class="col-desc texto-quebra">${item ? esc(item.descricao) : ''}</td>
                             <td class="col-riscos texto-quebra">${item ? esc(item.riscos_envolvidos) : ''}</td>
                             <td class="col-medidas texto-quebra">${item ? esc(item.medidas_controle) : ''}</td>
@@ -485,7 +491,7 @@
             }
         }
 
-        carregarFicha();
+        if (aprIdValido) carregarFicha();
     </script>
 </body>
 </html>

@@ -44,6 +44,21 @@
         .catalogo-box label {
             color: #1e40af;
         }
+        .historico-box {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 14px;
+            border-radius: 6px;
+            margin-bottom: 18px;
+        }
+        .historico-box select {
+            width: 100%;
+        }
+        .historico-box small {
+            display: block;
+            margin-top: 8px;
+            color: #4b5563;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -113,6 +128,19 @@
             </div>
 
             <form id="form-apr" onsubmit="salvarApr(event)">
+                <!-- Reutiliza somente dados básicos de uma APR do próprio usuário. -->
+                <div class="historico-box">
+                    <label for="historico_apr">Reutilizar dados de uma APR anterior (opcional)</label>
+                    <select id="historico_apr" onchange="reutilizarDadosApr()" disabled>
+                        <option value="">Carregando histórico de APRs...</option>
+                    </select>
+                    <small>
+                        Preenche cliente, local, atividade e responsável técnico.
+                        Revise os dados antes de salvar; a data, as etapas e os executantes
+                        não são copiados nesta versão. Você pode continuar preenchendo manualmente.
+                    </small>
+                </div>
+
                 <!-- Seleção / Cadastro de Cliente -->
                 <div class="form-group">
                     <label for="cliente_id">Cliente / Empresa</label>
@@ -244,6 +272,78 @@
         document.getElementById('data_emissao').valueAsDate = new Date();
 
         let catalogoRiscos = [];
+        let historicoAprs = [];
+
+        // Utiliza a listagem já autenticada de /api/aprs.
+        // new Option insere os nomes como TEXTO e não interpreta HTML (proteção XSS).
+        function atualizarHistoricoAprs(aprs) {
+            historicoAprs = Array.isArray(aprs) ? aprs : [];
+
+            const select = document.getElementById('historico_apr');
+            const selecaoAnterior = select.value;
+            select.replaceChildren(new Option('Preencher manualmente', ''));
+
+            historicoAprs.forEach(apr => {
+                const id = Number(apr.id);
+                if (!Number.isSafeInteger(id) || id <= 0) return;
+
+                const atividade = String(apr.atividade ?? 'Sem descrição');
+                const nomeCliente = String(apr.cliente?.nome ?? 'Cliente não informado');
+                const textoOpcao = `APR #${id} — ${atividade} — ${nomeCliente}`;
+                select.add(new Option(textoOpcao, String(id)));
+            });
+
+            select.disabled = select.options.length <= 1;
+            if (Array.from(select.options).some(op => op.value === selecaoAnterior)) {
+                select.value = selecaoAnterior;
+            }
+        }
+
+        function reutilizarDadosApr() {
+            const select = document.getElementById('historico_apr');
+            const id = Number(select.value);
+            if (!Number.isSafeInteger(id) || id <= 0) return;
+
+            const apr = historicoAprs.find(item => Number(item.id) === id);
+            if (!apr) {
+                mostrarAlerta('APR anterior não encontrada. Atualize a página.', 'erro');
+                select.value = '';
+                return;
+            }
+
+            // Não sobrescreve informações já digitadas sem autorização.
+            const campos = ['local', 'atividade', 'responsavel_nome', 'responsavel_crea'];
+            const jaPreenchidos = campos.some(campo =>
+                document.getElementById(campo).value.trim() !== ''
+            ) || document.getElementById('cliente_id').value !== '';
+            if (jaPreenchidos && !window.confirm(
+                'Substituir os dados básicos já preenchidos pelos da APR selecionada?'
+            )) {
+                select.value = '';
+                return;
+            }
+
+            const selectCliente = document.getElementById('cliente_id');
+            const clienteId = String(apr.cliente_id ?? '');
+            const clienteDisponivel = Array.from(selectCliente.options)
+                .some(opcao => opcao.value === clienteId && clienteId !== '');
+
+            selectCliente.value = clienteDisponivel ? clienteId : '';
+            document.getElementById('local').value = String(apr.local ?? '');
+            document.getElementById('atividade').value = String(apr.atividade ?? '');
+            document.getElementById('responsavel_nome').value = String(apr.responsavel_nome ?? '');
+            document.getElementById('responsavel_crea').value = String(apr.responsavel_crea ?? '');
+
+            // Data de emissão, etapas e executantes permanecem próprios da NOVA APR.
+            if (!clienteDisponivel) {
+                mostrarAlerta(
+                    'Dados básicos recuperados. O cliente anterior não está disponível: selecione um cliente.',
+                    'erro'
+                );
+                return;
+            }
+            mostrarAlerta('Dados recuperados. Confira as informações antes de salvar a nova APR.');
+        }
 
         function headersAuth() {
             return {
@@ -293,7 +393,8 @@
             try {
                 const resp = await fetch(`${API_URL}/catalogo-riscos`, { headers: headersAuth() });
                 if (resp.ok) {
-                    catalogoRiscos = await resp.json();
+                    const dados = await resp.json();
+                    catalogoRiscos = Array.isArray(dados) ? dados : [];
                 }
             } catch (e) {}
         }
@@ -359,12 +460,22 @@
             }
         }
 
-        function gerarOpcoesCatalogo() {
-            let html = '<option value="">-- Selecione um risco/EPI pronto para preencher automaticamente --</option>';
+        // Monta opções usando a API DOM: os textos do catálogo não são interpretados como HTML.
+        function preencherOpcoesCatalogo(select) {
+            const inicial = document.createElement('option');
+            inicial.value = '';
+            inicial.textContent = '-- Selecione um risco/EPI pronto para preencher automaticamente --';
+            select.replaceChildren(inicial);
+
             catalogoRiscos.forEach(item => {
-                html += `<option value="${item.id}">[${item.categoria}] ${item.descricao_etapa}</option>`;
+                const id = Number(item.id);
+                if (!Number.isSafeInteger(id) || id <= 0) return;
+
+                const opcao = document.createElement('option');
+                opcao.value = String(id);
+                opcao.textContent = `[${item.categoria ?? ''}] ${item.descricao_etapa ?? ''}`;
+                select.appendChild(opcao);
             });
-            return html;
         }
 
         function adicionarEtapa() {
@@ -375,15 +486,13 @@
             div.className = 'bloco-item etapa-item';
             div.innerHTML = `
                 <div class="bloco-topo">
-                    <strong class="titulo-etapa">Etapa ${num}</strong>
+                    <strong class="titulo-etapa">Etapa</strong>
                     <button type="button" class="btn btn-danger btn-sm" onclick="removerBloco(this, 'etapa')">Remover</button>
                 </div>
 
                 <div class="catalogo-box">
                     <label>Automação: Preencher Riscos e EPIs do Catálogo</label>
-                    <select onchange="aplicarModeloRisco(this)">
-                        ${gerarOpcoesCatalogo()}
-                    </select>
+                    <select class="select-catalogo" onchange="aplicarModeloRisco(this)"></select>
                 </div>
 
                 <div class="form-group">
@@ -402,6 +511,8 @@
                     </div>
                 </div>
             `;
+            div.querySelector('.titulo-etapa').textContent = `Etapa ${num}`;
+            preencherOpcoesCatalogo(div.querySelector('.select-catalogo'));
             container.appendChild(div);
         }
 
@@ -430,7 +541,7 @@
                 <div class="grid-3">
                     <div class="form-group">
                         <label>Nome Completo *</label>
-                        <input type="text" class="exec-nome" required value="${nomePadrao}" placeholder="Nome do aluno/executante">
+                        <input type="text" class="exec-nome" required placeholder="Nome do aluno/executante">
                     </div>
                     <div class="form-group">
                         <label>Função *</label>
@@ -442,6 +553,8 @@
                     </div>
                 </div>
             `;
+            // Não interpolar nome do usuário dentro de um atributo HTML.
+            div.querySelector('.exec-nome').value = String(nomePadrao ?? '');
             container.appendChild(div);
         }
 
@@ -505,6 +618,7 @@
 
                 mostrarAlerta('APR salva com sucesso!');
                 document.getElementById('form-apr').reset();
+                document.getElementById('historico_apr').value = '';
                 document.getElementById('data_emissao').valueAsDate = new Date();
                 document.getElementById('container-etapas').innerHTML = '';
                 document.getElementById('container-executantes').innerHTML = '';
@@ -526,50 +640,81 @@
                     sair();
                     return;
                 }
+                if (!resp.ok) throw new Error(`Erro HTTP ${resp.status}`);
 
                 const aprs = await resp.json();
+                if (!Array.isArray(aprs)) throw new Error('Formato de resposta inválido.');
+
+                atualizarHistoricoAprs(aprs);
 
                 if (!aprs.length) {
-                    lista.innerHTML = '<p style="color: #6b7280;">Você ainda não possui APRs cadastradas. Clique em <strong>+ Nova APR</strong> para começar.</p>';
+                    const mensagem = document.createElement('p');
+                    mensagem.style.color = '#6b7280';
+                    mensagem.textContent = 'Você ainda não possui APRs cadastradas. Clique em + Nova APR para começar.';
+                    lista.replaceChildren(mensagem);
                     return;
                 }
 
-                let html = `
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Data</th>
-                                <th>Cliente</th>
-                                <th>Atividade</th>
-                                <th>Local</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+                const tabela = document.createElement('table');
+                const cabecalho = document.createElement('thead');
+                // HTML fixo, controlado pelo próprio código: sem dados de usuários.
+                cabecalho.innerHTML = '<tr><th>#</th><th>Data</th><th>Cliente</th><th>Atividade</th><th>Local</th><th>Ações</th></tr>';
+                const corpo = document.createElement('tbody');
 
                 aprs.forEach(apr => {
-                    const dataFormatada = apr.data_emissao ? apr.data_emissao.split('-').reverse().join('/') : '-';
-                    html += `
-                        <tr>
-                            <td>${apr.id}</td>
-                            <td>${dataFormatada}</td>
-                            <td>${apr.cliente ? apr.cliente.nome : '-'}</td>
-                            <td>${apr.atividade}</td>
-                            <td>${apr.local}</td>
-                            <td class="acoes-tabela">
-                                <a href="imprimir.html?id=${apr.id}" target="_blank" class="btn btn-primary btn-sm">Gerar PDF</a>
-                                <button type="button" class="btn btn-danger btn-sm" onclick="excluirApr(${apr.id})">Excluir</button>
-                            </td>
-                        </tr>
-                    `;
+                    const id = Number(apr.id);
+                    if (!Number.isSafeInteger(id) || id <= 0) return;
+
+                    const data = String(apr.data_emissao ?? '').split('T')[0];
+                    const dataFormatada = /^\d{4}-\d{2}-\d{2}$/.test(data)
+                        ? data.split('-').reverse().join('/')
+                        : '-';
+
+                    const linha = document.createElement('tr');
+                    const valores = [
+                        id,
+                        dataFormatada,
+                        apr.cliente?.nome ?? '-',
+                        apr.atividade ?? '',
+                        apr.local ?? ''
+                    ];
+
+                    valores.forEach(valor => {
+                        const celula = document.createElement('td');
+                        // textContent impede que dados cadastrados executem HTML/JS.
+                        celula.textContent = String(valor);
+                        linha.appendChild(celula);
+                    });
+
+                    const acoes = document.createElement('td');
+                    acoes.className = 'acoes-tabela';
+
+                    const imprimir = document.createElement('a');
+                    imprimir.href = `imprimir.html?id=${encodeURIComponent(id)}`;
+                    imprimir.target = '_blank';
+                    imprimir.rel = 'noopener noreferrer';
+                    imprimir.className = 'btn btn-primary btn-sm';
+                    imprimir.textContent = 'Gerar PDF';
+
+                    const excluir = document.createElement('button');
+                    excluir.type = 'button';
+                    excluir.className = 'btn btn-danger btn-sm';
+                    excluir.textContent = 'Excluir';
+                    excluir.addEventListener('click', () => excluirApr(id));
+
+                    acoes.append(imprimir, excluir);
+                    linha.appendChild(acoes);
+                    corpo.appendChild(linha);
                 });
 
-                html += '</tbody></table>';
-                lista.innerHTML = html;
+                tabela.append(cabecalho, corpo);
+                lista.replaceChildren(tabela);
             } catch (e) {
-                lista.innerHTML = '<p style="color: #dc2626;">Erro ao carregar APRs. Verifique se o servidor Laravel está rodando.</p>';
+                atualizarHistoricoAprs([]);
+                const mensagem = document.createElement('p');
+                mensagem.style.color = '#dc2626';
+                mensagem.textContent = 'Erro ao carregar APRs. Verifique se o servidor Laravel está rodando.';
+                lista.replaceChildren(mensagem);
             }
         }
 
