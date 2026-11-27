@@ -139,9 +139,9 @@
                         <option value="">Carregando histórico de APRs...</option>
                     </select>
                     <small>
-                        Preenche cliente, local, atividade e responsável técnico.
-                        Revise os dados antes de salvar; a data, as etapas e os executantes
-                        não são copiados nesta versão. Você pode continuar preenchendo manualmente.
+                        Copia cliente, local, atividade, responsável técnico, as etapas
+                        (descrição, riscos e EPIs) e os executantes (nome, função e RA).
+                        A data de emissão continua sendo a de hoje. Revise tudo antes de salvar.
                     </small>
                 </div>
 
@@ -158,25 +158,26 @@
 
                 <!-- Sub-formulário rápido para cadastrar Cliente -->
                 <div id="box-novo-cliente" class="sub-card hidden">
-                    <h4 style="margin-bottom: 10px;">Cadastrar Novo Cliente</h4>
+                    <h4 style="margin-bottom: 4px;">Cadastrar Novo Cliente</h4>
+                    <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 12px;">Já vem preenchido com os dados do SENAI Americana. Altere se o cliente for outro.</p>
                     <div class="grid-2">
                         <div class="form-group">
                             <label>Nome / Razão Social *</label>
-                            <input type="text" id="cli-nome" placeholder="Ex: Metalúrgica Americana Ltda">
+                            <input type="text" id="cli-nome" value="SENAI Americana" placeholder="Ex: Metalúrgica Americana Ltda">
                         </div>
                         <div class="form-group">
                             <label>E-mail *</label>
-                            <input type="email" id="cli-email" placeholder="contato@empresa.com.br">
+                            <input type="email" id="cli-email" value="secretaria507@sp.senai.br" placeholder="contato@empresa.com.br">
                         </div>
                     </div>
                     <div class="grid-3">
                         <div class="form-group">
                             <label>Endereço *</label>
-                            <input type="text" id="cli-endereco" placeholder="Av. Brasil">
+                            <input type="text" id="cli-endereco" value="Av. Brasil" placeholder="Av. Brasil">
                         </div>
                         <div class="form-group">
                             <label>Número *</label>
-                            <input type="text" id="cli-numero" placeholder="2801">
+                            <input type="text" id="cli-numero" value="2801" placeholder="2801">
                         </div>
                         <div class="form-group">
                             <label>Complemento</label>
@@ -186,7 +187,7 @@
                     <div class="grid-3">
                         <div class="form-group">
                             <label>Bairro *</label>
-                            <input type="text" id="cli-bairro" placeholder="Jardim Glória">
+                            <input type="text" id="cli-bairro" value="Parque Residencial Nardini" placeholder="Jardim Glória">
                         </div>
                         <div class="form-group">
                             <label>Cidade *</label>
@@ -200,11 +201,11 @@
                     <div class="grid-2">
                         <div class="form-group">
                             <label>Telefone Fixo</label>
-                            <input type="text" id="cli-tel-res" placeholder="(19) 3461-0000">
+                            <input type="text" id="cli-tel-res" value="(19) 3471-2600" placeholder="(19) 3461-0000">
                         </div>
                         <div class="form-group">
                             <label>Telefone Celular *</label>
-                            <input type="text" id="cli-tel-cel" placeholder="(19) 99999-0000">
+                            <input type="text" id="cli-tel-cel" value="(19) 3471-2600" placeholder="(19) 99999-0000">
                         </div>
                     </div>
                     <button type="button" class="btn btn-primary btn-sm" onclick="cadastrarCliente()">Salvar Cliente</button>
@@ -233,8 +234,8 @@
                         <input type="text" id="responsavel_nome" required placeholder="Nome do responsável">
                     </div>
                     <div class="form-group">
-                        <label for="responsavel_crea">Registro CREA / CFT *</label>
-                        <input type="text" id="responsavel_crea" required placeholder="Ex: SP-506123456/D">
+                        <label for="responsavel_crea">Registro CREA / CFT (opcional)</label>
+                        <input type="text" id="responsavel_crea" placeholder="Ex: SP-506123456/D">
                     </div>
                 </div>
 
@@ -316,12 +317,17 @@
             }
 
             // Não sobrescreve informações já digitadas sem autorização.
+            // (O cliente SENAI selecionado automaticamente e o nome padrão do executante não contam.)
             const campos = ['local', 'atividade', 'responsavel_nome', 'responsavel_crea'];
+            const clienteAtual = document.getElementById('cliente_id').value;
+            const etapaDigitada = Array.from(document.querySelectorAll(
+                '.etapa-descricao, .etapa-riscos, .etapa-medidas'
+            )).some(el => el.value.trim() !== '');
             const jaPreenchidos = campos.some(campo =>
                 document.getElementById(campo).value.trim() !== ''
-            ) || document.getElementById('cliente_id').value !== '';
+            ) || etapaDigitada || (clienteAtual !== '' && clienteAtual !== clienteSenaiId);
             if (jaPreenchidos && !window.confirm(
-                'Substituir os dados básicos já preenchidos pelos da APR selecionada?'
+                'Substituir o que já foi preenchido pelos dados da APR selecionada?'
             )) {
                 select.value = '';
                 return;
@@ -338,10 +344,36 @@
             document.getElementById('responsavel_nome').value = String(apr.responsavel_nome ?? '');
             document.getElementById('responsavel_crea').value = String(apr.responsavel_crea ?? '');
 
-            // Data de emissão, etapas e executantes permanecem próprios da NOVA APR.
+            // Etapas: recria os blocos com descrição, riscos e EPIs da APR anterior.
+            const etapas = Array.isArray(apr.etapas) ? [...apr.etapas] : [];
+            etapas.sort((a, b) => Number(a.numero_etapa ?? 0) - Number(b.numero_etapa ?? 0));
+            if (etapas.length) {
+                document.getElementById('container-etapas').replaceChildren();
+                etapas.forEach(etapa => {
+                    adicionarEtapa();
+                    const bloco = document.querySelector('#container-etapas .etapa-item:last-child');
+                    bloco.querySelector('.etapa-descricao').value = String(etapa.descricao ?? '');
+                    bloco.querySelector('.etapa-riscos').value = String(etapa.riscos_envolvidos ?? '');
+                    bloco.querySelector('.etapa-medidas').value = String(etapa.medidas_controle ?? '');
+                });
+            }
+
+            // Executantes: recria os blocos com nome, função e matrícula/RA.
+            const executantes = Array.isArray(apr.executantes) ? apr.executantes : [];
+            if (executantes.length) {
+                document.getElementById('container-executantes').replaceChildren();
+                executantes.forEach(exec => {
+                    adicionarExecutante(String(exec.nome ?? ''));
+                    const bloco = document.querySelector('#container-executantes .executante-item:last-child');
+                    bloco.querySelector('.exec-funcao').value = String(exec.funcao ?? '');
+                    bloco.querySelector('.exec-matricula').value = String(exec.matricula ?? '');
+                });
+            }
+
+            // A data de emissão continua sendo a da NOVA APR (hoje).
             if (!clienteDisponivel) {
                 mostrarAlerta(
-                    'Dados básicos recuperados. O cliente anterior não está disponível: selecione um cliente.',
+                    'Dados recuperados. O cliente anterior não está disponível: selecione um cliente.',
                     'erro'
                 );
                 return;
@@ -389,8 +421,55 @@
                 carregarClientes(),
                 carregarAprs()
             ]);
+            await garantirClienteSenai();
             adicionarEtapa();
             adicionarExecutante(user.name);
+        }
+
+        // Dados fixos do SENAI Americana, cliente padrão das APRs.
+        const CLIENTE_SENAI = {
+            nome: 'SENAI Americana',
+            email: 'secretaria507@sp.senai.br',
+            endereco: 'Av. Brasil',
+            numero: '2801',
+            complemento: null,
+            bairro: 'Parque Residencial Nardini',
+            cidade: 'Americana',
+            estado: 'SP',
+            tel_residencial: '(19) 3471-2600',
+            tel_celular: '(19) 3471-2600'
+        };
+        let clienteSenaiId = null;
+
+        // Procura o SENAI Americana na lista do usuário. Se não existir, cadastra uma única vez.
+        // Depois deixa ele selecionado em "Cliente / Empresa".
+        async function garantirClienteSenai() {
+            try {
+                let senai = listaClientes.find(c =>
+                    String(c.nome ?? '').trim().toLowerCase() === CLIENTE_SENAI.nome.toLowerCase()
+                );
+
+                if (!senai) {
+                    const resp = await fetch(`${API_URL}/clientes`, {
+                        method: 'POST',
+                        headers: headersAuth(),
+                        body: JSON.stringify(CLIENTE_SENAI)
+                    });
+                    if (!resp.ok) return;
+                    senai = await resp.json();
+                    await carregarClientes();
+                }
+
+                clienteSenaiId = String(senai.id);
+                selecionarClienteSenai();
+            } catch (e) {}
+        }
+
+        function selecionarClienteSenai() {
+            const select = document.getElementById('cliente_id');
+            if (clienteSenaiId && Array.from(select.options).some(op => op.value === clienteSenaiId)) {
+                select.value = clienteSenaiId;
+            }
         }
 
         async function carregarCatalogoRiscos() {
@@ -403,11 +482,14 @@
             } catch (e) {}
         }
 
+        let listaClientes = [];
+
         async function carregarClientes() {
             try {
                 const resp = await fetch(`${API_URL}/clientes`, { headers: headersAuth() });
                 if (resp.ok) {
                     const clientes = await resp.json();
+                    listaClientes = Array.isArray(clientes) ? clientes : [];
                     const select = document.getElementById('cliente_id');
                     select.innerHTML = '<option value="">Selecione um cliente...</option>';
                     clientes.forEach(c => {
@@ -552,8 +634,8 @@
                         <input type="text" class="exec-funcao" required placeholder="Ex: Aluno / Eletricista">
                     </div>
                     <div class="form-group">
-                        <label>Matrícula / RA *</label>
-                        <input type="text" class="exec-matricula" required placeholder="Ex: 20261045">
+                        <label>Matrícula / RA (opcional)</label>
+                        <input type="text" class="exec-matricula" placeholder="Ex: 20261045">
                     </div>
                 </div>
             `;
@@ -590,7 +672,7 @@
             const executantes = Array.from(document.querySelectorAll('.executante-item')).map(el => ({
                 nome: el.querySelector('.exec-nome').value,
                 funcao: el.querySelector('.exec-funcao').value,
-                matricula: el.querySelector('.exec-matricula').value
+                matricula: el.querySelector('.exec-matricula').value.trim() || null
             }));
 
             const payload = {
@@ -598,7 +680,7 @@
                 local: document.getElementById('local').value,
                 atividade: document.getElementById('atividade').value,
                 responsavel_nome: document.getElementById('responsavel_nome').value,
-                responsavel_crea: document.getElementById('responsavel_crea').value,
+                responsavel_crea: document.getElementById('responsavel_crea').value.trim() || null,
                 data_emissao: document.getElementById('data_emissao').value,
                 etapas,
                 executantes
@@ -622,6 +704,7 @@
 
                 mostrarAlerta('APR salva com sucesso!');
                 document.getElementById('form-apr').reset();
+                selecionarClienteSenai();
                 document.getElementById('historico_apr').value = '';
                 document.getElementById('data_emissao').valueAsDate = new Date();
                 document.getElementById('container-etapas').innerHTML = '';

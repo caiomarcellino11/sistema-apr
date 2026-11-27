@@ -31,7 +31,7 @@ class AprController extends Controller
             'local'                         => 'required|string|max:255',
             'atividade'                     => 'required|string|max:255',
             'responsavel_nome'              => 'required|string|max:255',
-            'responsavel_crea'              => 'required|string|max:50',
+            'responsavel_crea'              => 'nullable|string|max:50',
             'data_emissao'                  => 'required|date',
             'etapas'                        => 'required|array|min:1',
             'etapas.*.numero_etapa'         => 'nullable|integer',
@@ -41,7 +41,7 @@ class AprController extends Controller
             'executantes'                   => 'required|array|min:1',
             'executantes.*.nome'            => 'required|string|max:255',
             'executantes.*.funcao'          => 'required|string|max:255',
-            'executantes.*.matricula'       => 'required|string|max:50',
+            'executantes.*.matricula'       => 'nullable|string|max:50',
         ]);
 
 $apr = DB::transaction(function () use ($dados, $request) {
@@ -50,7 +50,7 @@ $apr = DB::transaction(function () use ($dados, $request) {
         'local' => $dados['local'],
         'atividade' => $dados['atividade'],
         'responsavel_nome' => $dados['responsavel_nome'],
-        'responsavel_crea' => $dados['responsavel_crea'],
+        'responsavel_crea' => $dados['responsavel_crea'] ?? null,
         'data_emissao' => $dados['data_emissao'],
     ]);
 
@@ -67,7 +67,7 @@ $apr = DB::transaction(function () use ($dados, $request) {
         $apr->executantes()->create([
             'nome' => $executante['nome'],
             'funcao' => $executante['funcao'],
-            'matricula' => $executante['matricula'],
+            'matricula' => $executante['matricula'] ?? null,
         ]);
     }
 
@@ -102,7 +102,7 @@ $apr = DB::transaction(function () use ($dados, $request) {
             'local'                         => 'sometimes|required|string|max:255',
             'atividade'                     => 'sometimes|required|string|max:255',
             'responsavel_nome'              => 'sometimes|required|string|max:255',
-            'responsavel_crea'              => 'sometimes|required|string|max:50',
+            'responsavel_crea'              => 'sometimes|nullable|string|max:50',
             'data_emissao'                  => 'sometimes|required|date',
             'etapas'                        => 'sometimes|array|min:1',
             'etapas.*.numero_etapa'         => 'nullable|integer',
@@ -112,7 +112,7 @@ $apr = DB::transaction(function () use ($dados, $request) {
             'executantes'                   => 'sometimes|array|min:1',
             'executantes.*.nome'            => 'required_with:executantes|string|max:255',
             'executantes.*.funcao'          => 'required_with:executantes|string|max:255',
-            'executantes.*.matricula'       => 'required_with:executantes|string|max:50',
+            'executantes.*.matricula'       => 'nullable|string|max:50',
         ]);
 
         DB::transaction(function () use ($apr, $dados) {
@@ -136,7 +136,7 @@ $apr = DB::transaction(function () use ($dados, $request) {
                     $apr->executantes()->create([
                         'nome'      => $executante['nome'],
                         'funcao'    => $executante['funcao'],
-                        'matricula' => $executante['matricula'],
+                        'matricula' => $executante['matricula'] ?? null,
                     ]);
                 }
             }
