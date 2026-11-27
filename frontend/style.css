@@ -5,25 +5,57 @@
     font-family: 'Segoe UI', Arial, sans-serif;
 }
 
+/* Paleta institucional SENAI */
+:root {
+    --senai-vermelho: #ff0000;
+    --senai-vermelho-escuro: #c80000;
+    --senai-vermelho-claro: #fff1f1;
+    --senai-branco: #ffffff;
+    --senai-grafite: #1f1f1f;
+}
+
 body {
-    background-color: #f0f2f5;
+    background-color: #f4f4f4;
     color: #1f2937;
     line-height: 1.5;
 }
 
 .topbar {
-    background-color: #004a8d;
-    color: #ffffff;
-    padding: 14px 24px;
+    background-color: var(--senai-branco);
+    color: var(--senai-grafite);
+    border-bottom: 5px solid var(--senai-vermelho);
+    padding: 12px 24px;
+    gap: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-senai {
+    height: 40px;
+    width: auto;
+    display: block;
+}
+
 .topbar h1 {
     font-size: 1.15rem;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--senai-grafite);
+    border-left: 2px solid #e0e0e0;
+    padding-left: 16px;
+}
+
+@media (max-width: 640px) {
+    .topbar { flex-wrap: wrap; padding: 10px 14px; }
+    .logo-senai { height: 30px; }
+    .topbar h1 { font-size: 0.95rem; padding-left: 12px; }
 }
 
 .container {
@@ -64,8 +96,8 @@ body {
 }
 
 .tab-btn.active {
-    color: #004a8d;
-    border-bottom-color: #004a8d;
+    color: var(--senai-vermelho);
+    border-bottom-color: var(--senai-vermelho);
 }
 
 .form-group {
@@ -90,7 +122,8 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
     outline: none;
-    border-color: #004a8d;
+    border-color: var(--senai-vermelho);
+    box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.15);
 }
 
 .btn {
@@ -106,22 +139,38 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-primary {
-    background-color: #004a8d;
-    color: #ffffff;
+    background-color: var(--senai-vermelho);
+    color: var(--senai-branco);
 }
 
 .btn-primary:hover {
-    background-color: #003668;
+    background-color: var(--senai-vermelho-escuro);
 }
 
 .btn-secondary {
-    background-color: #e5e7eb;
-    color: #1f2937;
+    background-color: var(--senai-branco);
+    color: var(--senai-grafite);
+    border: 1px solid #c4c4c4;
+}
+
+.btn-secondary:hover {
+    border-color: var(--senai-vermelho);
+    color: var(--senai-vermelho);
+}
+
+.card h2 {
+    color: var(--senai-grafite);
+    border-left: 4px solid var(--senai-vermelho);
+    padding-left: 10px;
 }
 
 .btn-danger {
-    background-color: #dc2626;
-    color: #ffffff;
+    background-color: var(--senai-grafite);
+    color: var(--senai-branco);
+}
+
+.btn-danger:hover {
+    background-color: #000000;
 }
 
 .btn-full {

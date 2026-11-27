@@ -35,14 +35,14 @@
             margin-bottom: 12px;
         }
         .catalogo-box {
-            background-color: #eff6ff;
-            border: 1px solid #bfdbfe;
+            background-color: var(--senai-vermelho-claro);
+            border: 1px solid #ffc4c4;
             padding: 10px 12px;
             border-radius: 6px;
             margin-bottom: 12px;
         }
         .catalogo-box label {
-            color: #1e40af;
+            color: var(--senai-vermelho-escuro);
         }
         .historico-box {
             background-color: #f0fdf4;
@@ -71,7 +71,8 @@
             font-size: 0.92rem;
         }
         th {
-            background-color: #f3f4f6;
+            background-color: var(--senai-grafite);
+            color: var(--senai-branco);
             font-weight: 600;
         }
         .acoes-tabela {
@@ -99,7 +100,10 @@
 </head>
 <body>
     <header class="topbar">
-        <h1>Sistema APR — Painel do Aluno</h1>
+        <div class="marca">
+            <img src="img/logo-senai.png" alt="SENAI" class="logo-senai">
+            <h1>Sistema APR — Painel do Aluno</h1>
+        </div>
         <div class="header-actions">
             <span id="nome-aluno"></span>
             <button type="button" class="btn btn-secondary btn-sm" onclick="sair()">Sair</button>
