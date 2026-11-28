@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -10,56 +13,20 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    /**
+     * Realiza o cadastro de um novo usuario.
+     */
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $dados = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                'unique:users,email',
-            ],
-
-            'password' => [
-                'bail',
-                'required',
-                'string',
-                'min:15',
-                'max:64',
-
-                function ($attribute, $value, $fail) {
-                    if (
-                        config('hashing.driver', 'bcrypt') === 'bcrypt'
-                        && strlen($value) > 72
-                    ) {
-                        $fail('A senha ultrapassa o limite de 72 bytes.');
-                    }
-                },
-            ],
-
-            'role' => 'missing',
-
-        ], [
-            'name.required' => 'Informe seu nome completo.',
-            'email.required' => 'Informe seu e-mail.',
-            'email.email' => 'Informe um e-mail valido.',
-            'email.unique' => 'Este e-mail ja esta cadastrado.',
-            'password.required' => 'Informe uma senha.',
-            'password.min' => 'A senha deve possuir pelo menos 15 caracteres.',
-            'password.max' => 'A senha deve possuir no maximo 64 caracteres.',
-            'role.missing' => 'Nao e permitido definir o perfil de acesso.',
-        ]);
+        // Recupera somente os dados validados.
+        $dados = $request->validated();
 
         $user = new User([
             'name' => $dados['name'],
             'email' => $dados['email'],
-            'password' => $dados['password'],
+
+            // Gera explicitamente o hash da senha.
+            'password' => Hash::make($dados['password']),
         ]);
 
         // Impede a elevacao de privilegios.
@@ -74,24 +41,31 @@ class AuthController extends Controller
         );
     }
 
-    public function login(Request $request)
+    /**
+     * Autentica um usuario existente.
+     */
+    public function login(LoginRequest $request): JsonResponse
     {
-        $dados = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
+        // Recupera somente os dados validados.
+        $dados = $request->validated();
 
         $user = User::where(
             'email',
             $dados['email']
         )->first();
 
+        // Verifica as credenciais informadas.
         if (
             !$user ||
-            !Hash::check($dados['password'], $user->password)
+            !Hash::check(
+                $dados['password'],
+                $user->password
+            )
         ) {
             throw ValidationException::withMessages([
-                'email' => ['E-mail ou senha incorretos.'],
+                'email' => [
+                    'E-mail ou senha incorretos.',
+                ],
             ]);
         }
 
@@ -108,7 +82,8 @@ class AuthController extends Controller
         Request $request,
         User $user,
         int $status = 200
-    ) {
+    ): JsonResponse {
+
         // Autenticacao do Front-End por sessao.
         if ($request->hasSession()) {
 
@@ -135,7 +110,10 @@ class AuthController extends Controller
         ], $status);
     }
 
-    public function logout(Request $request)
+    /**
+     * Encerra a autenticacao do usuario.
+     */
+    public function logout(Request $request): JsonResponse
     {
         // Encerra a autenticacao por sessao.
         if (
