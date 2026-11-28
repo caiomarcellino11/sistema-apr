@@ -1,0 +1,51 @@
+# ==================================================
+# SISTEMA APR - PROTECAO GLOBAL DO REPOSITORIO
+# ==================================================
+
+# Arquivos de ambiente
+.env
+.env.*
+!.env.example
+
+# Credenciais e chaves privadas
+auth.json
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Logs
+*.log
+
+# Bancos locais e backups
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.dump
+*.bak
+
+# Dependencias
+node_modules/
+vendor/
+
+# Arquivos temporarios
+*.tmp
+*.temp
+*.swp
+
+# Sistemas operacionais
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDEs e editores
+.idea/
+.vscode/
+
+# Cache de testes
+.phpunit.cache/
+.phpunit.result.cache
+
+# Arquivos de cobertura de testes
+coverage/
