@@ -2,86 +2,201 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreClienteRequest;
+use App\Http\Requests\UpdateClienteRequest;
 use App\Models\Cliente;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ClienteController extends Controller
 {
-   public function index(Request $request)
-{
-    $clientes = $request->user()
-        ->clientes()
-        ->orderBy('nome')
-        ->get();
-
-    return response()->json($clientes);
-}
-
-    public function store(Request $request)
+    /**
+     * Lista somente os clientes do usuario autenticado.
+     */
+    public function index(Request $request): JsonResponse
     {
-        $dados = $request->validate([
-            'nome'            => 'required|string|max:255',
-            'endereco'        => 'required|string|max:255',
-            'numero'          => 'required|string|max:50',
-            'complemento'     => 'nullable|string|max:255',
-            'bairro'          => 'required|string|max:255',
-            'cidade'          => 'required|string|max:255',
-            'estado'          => 'required|string|max:2',
-            'tel_residencial' => 'nullable|string|max:30',
-            'tel_celular'     => 'required|string|max:30',
-            'email'           => 'required|email|max:255',
-        ]);
+        $clientes = $request->user()
+            ->clientes()
+            ->orderBy('nome')
+            ->get();
 
-       $cliente = $request->user()
-        ->clientes()
-        ->create($dados);
+        return response()->json($clientes);
+    }
+
+    /**
+     * Cadastra um novo cliente.
+     */
+    public function store(
+        StoreClienteRequest $request
+    ): JsonResponse {
+
+        // Recupera somente os dados validados.
+        $dados = $request->validated();
+
+        // Associa o cliente ao usuario autenticado.
+        $cliente = $request->user()
+            ->clientes()
+            ->create($dados);
 
         return response()->json($cliente, 201);
     }
 
-  public function show(Request $request, string $id)
-{
-    $cliente = $request->user()
-        ->clientes()
-        ->findOrFail($id);
+    /**
+     * Consulta um cliente pertencente ao usuario.
+     */
+    public function show(
+        Request $request,
+        string $id
+    ): JsonResponse {
 
-    return response()->json($cliente);
-}
-
-    public function update(Request $request, string $id)
-    {
-       $cliente = $request->user()
-         ->clientes()
-         ->findOrFail($id);
-
-        $dados = $request->validate([
-            'nome'            => 'sometimes|required|string|max:255',
-            'endereco'        => 'sometimes|required|string|max:255',
-            'numero'          => 'sometimes|required|string|max:50',
-            'complemento'     => 'nullable|string|max:255',
-            'bairro'          => 'sometimes|required|string|max:255',
-            'cidade'          => 'sometimes|required|string|max:255',
-            'estado'          => 'sometimes|required|string|max:2',
-            'tel_residencial' => 'nullable|string|max:30',
-            'tel_celular'     => 'sometimes|required|string|max:30',
-            'email'           => 'sometimes|required|email|max:255',
-        ]);
-
-        $cliente->update($dados);
+        $cliente = $this->buscarCliente(
+            $request,
+            $id
+        );
 
         return response()->json($cliente);
     }
 
-  public function destroy(Request $request, string $id)
-{
-    $cliente = $request->user()
-        ->clientes()
-        ->findOrFail($id);
+    /**
+     * Atualiza os dados de um cliente.
+     */
+    public function update(
+        UpdateClienteRequest $request,
+        string $id
+    ): JsonResponse {
 
-    $cliente->delete();
+        $cliente = $this->buscarCliente(
+            $request,
+            $id
+        );
 
-    return response()->json([
-        'mensagem' => 'Cliente excluído com sucesso.'
-    ]);
-}
+        // Atualiza somente os dados validados.
+        $cliente->update(
+            $request->validated()
+        );
+
+        return response()->json($cliente);
+    }
+
+    /**
+     * Exclui um cliente pertencente ao usuario.
+     */
+    public function destroy(
+        Request $request,
+        string $id
+    ): JsonResponse {
+
+        $cliente = $this->buscarCliente(
+            $request,
+            $id
+        );
+
+        // Impede a exclusao de clientes vinculados a APRs.
+        if ($cliente->aprs()->exists()) {
+            return $this->respostaClienteVinculado();
+        }
+
+        try {
+
+            $cliente->delete();
+
+        } catch (QueryException $exception) {
+
+            // Trata violacoes de chave estrangeira.
+            // Protege contra vinculos criados durante a exclusao.
+            if ($this->violacaoChaveEstrangeira($exception)) {
+
+                return $this->respostaClienteVinculado();
+            }
+
+            // Outros erros serao tratados pelo Laravel.
+            throw $exception;
+        }
+
+        return response()->json([
+            'mensagem' => 'Cliente excluído com sucesso.',
+        ]);
+    }
+
+    /**
+     * Localiza um cliente pertencente ao usuario autenticado.
+     */
+    private function buscarCliente(
+        Request $request,
+        string $id
+    ): Cliente {
+
+        $idValidado = filter_var(
+            $id,
+            FILTER_VALIDATE_INT,
+            [
+                'options' => [
+                    'min_range' => 1,
+                ],
+            ]
+        );
+
+        // Impede consultas com identificadores invalidos.
+        if ($idValidado === false) {
+            abort(404, 'Cliente nao encontrado.');
+        }
+
+        // Protege os clientes de outros usuarios.
+        return $request->user()
+            ->clientes()
+            ->findOrFail($idValidado);
+    }
+
+    /**
+     * Retorna uma resposta segura para clientes vinculados.
+     */
+    private function respostaClienteVinculado(): JsonResponse
+    {
+        $mensagem = 'Nao e possivel excluir este cliente, pois ele esta vinculado a uma ou mais APRs.';
+
+        return response()->json([
+            'message' => $mensagem,
+            'mensagem' => $mensagem,
+        ], 409);
+    }
+
+    /**
+     * Identifica violacoes de chave estrangeira.
+     */
+    private function violacaoChaveEstrangeira(
+        QueryException $exception
+    ): bool {
+
+        $sqlState = (string) (
+            $exception->errorInfo[0] ?? ''
+        );
+
+        $codigo = (int) (
+            $exception->errorInfo[1] ?? 0
+        );
+
+        $mensagem = (string) (
+            $exception->errorInfo[2] ?? ''
+        );
+
+        // PostgreSQL.
+        if ($sqlState === '23503') {
+            return true;
+        }
+
+        // SQLite utilizado nos testes automatizados.
+        if (
+            $sqlState === '23000'
+            && in_array($codigo, [19, 787], true)
+            && str_contains(
+                strtolower($mensagem),
+                'foreign key constraint failed'
+            )
+        ) {
+            return true;
+        }
+
+        return false;
+    }
 }
