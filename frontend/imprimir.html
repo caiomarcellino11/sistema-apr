@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Análise Preliminar de Risco - APR</title>
+
     <style>
         * {
             box-sizing: border-box;
@@ -45,6 +48,11 @@
             font-size: 12px;
         }
 
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .btn-imprimir {
             background-color: #ffffff;
             color: #ff0000;
@@ -55,7 +63,7 @@
             color: #ffffff;
         }
 
-        /* Folha A4 Retrato fiel ao modelo SENAI */
+        /* Folha A4 em orientação retrato */
         .folha-apr {
             width: 210mm;
             min-height: 297mm;
@@ -202,6 +210,7 @@
         }
 
         @media print {
+
             @page {
                 size: A4 portrait;
                 margin: 6mm;
@@ -225,270 +234,840 @@
                 padding: 0;
                 box-shadow: none;
             }
+
         }
     </style>
+
 </head>
+
 <body>
+
     <div class="barra-acoes">
-        <span><strong>Layout Oficial APR — SENAI</strong> (Clique ao lado para salvar em PDF)</span>
+
+        <span>
+            <strong>Layout APR — SENAI</strong>
+            (Clique ao lado para salvar em PDF)
+        </span>
+
         <div class="botoes">
-            <button type="button" class="btn btn-imprimir" onclick="window.print()">Imprimir / Salvar PDF</button>
-            <button type="button" class="btn btn-voltar" onclick="voltarPainel()">Voltar ao Painel</button>
+
+            <button
+                type="button"
+                id="btn-imprimir"
+                class="btn btn-imprimir"
+                onclick="imprimirFicha()"
+                disabled
+            >
+                Imprimir / Salvar PDF
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-voltar"
+                onclick="voltarPainel()"
+            >
+                Voltar ao Painel
+            </button>
+
         </div>
+
     </div>
 
     <div class="folha-apr" id="conteudo-apr">
-        <div class="aviso-status">Carregando documento oficial...</div>
+
+        <div class="aviso-status">
+            Carregando documento...
+        </div>
+
     </div>
 
+    <!-- Serviço centralizado da API -->
+
+    <script src="js/api.js"></script>
+
     <script>
-        const API_URL = 'http://127.0.0.1:8000/api';
-        const token = localStorage.getItem('apr_token');
-        const params = new URLSearchParams(window.location.search);
+
+        'use strict';
+
+        const params = new URLSearchParams(
+            window.location.search
+        );
+
         const aprId = params.get('id');
 
-        const aprIdValido = Boolean(token && aprId && /^[0-9]+$/.test(aprId));
+        const idNumerico = Number(aprId);
 
-        if (!aprIdValido) {
-            window.location.href = 'dashboard.html';
-        }
+        const aprIdValido =
+            typeof aprId === 'string' &&
+            /^[0-9]+$/.test(aprId) &&
+            Number.isSafeInteger(idNumerico) &&
+            idNumerico > 0;
+
+        let fichaCarregada = false;
+
+
+        // ==========================================
+        // NAVEGAÇÃO E IMPRESSÃO
+        // ==========================================
 
         function voltarPainel() {
+
             if (window.opener) {
+
                 window.close();
+
             } else {
+
                 window.location.href = 'dashboard.html';
+
             }
+
         }
 
-        function esc(valor) {
-            if (valor === null || valor === undefined) return '';
-            return String(valor)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
+        function imprimirFicha() {
+
+            if (!fichaCarregada) return;
+
+            window.print();
+
         }
+
+        function redirecionarLogin() {
+
+            fichaCarregada = false;
+
+            document.getElementById(
+                'btn-imprimir'
+            ).disabled = true;
+
+            exibirStatus('Sua sessão expirou.');
+
+            window.location.replace(
+                'index.html?session=expired'
+            );
+
+        }
+
+
+        // ==========================================
+        // SEGURANÇA E TRATAMENTO DE MENSAGENS
+        // ==========================================
+
+        /**
+         * Exibe mensagens sem interpretar HTML.
+         */
+        function exibirStatus(mensagem) {
+
+            const container =
+                document.getElementById('conteudo-apr');
+
+            const aviso = document.createElement('div');
+
+            aviso.className = 'aviso-status';
+
+            aviso.setAttribute('role', 'status');
+
+            aviso.textContent = mensagem;
+
+            container.replaceChildren(aviso);
+
+            fichaCarregada = false;
+
+            document.getElementById(
+                'btn-imprimir'
+            ).disabled = true;
+
+        }
+
+        /**
+         * Escapa caracteres HTML para impedir XSS.
+         */
+        function esc(valor) {
+
+            if (valor === null || valor === undefined) {
+
+                return '';
+
+            }
+
+            return String(valor)
+
+                .replace(/&/g, '&amp;')
+
+                .replace(/</g, '&lt;')
+
+                .replace(/>/g, '&gt;')
+
+                .replace(/"/g, '&quot;')
+
+                .replace(/'/g, '&#39;');
+
+        }
+
+
+        // ==========================================
+        // CARREGAMENTO DA FICHA
+        // ==========================================
 
         async function carregarFicha() {
-            const container = document.getElementById('conteudo-apr');
+
+            const container =
+                document.getElementById('conteudo-apr');
+
+            const botaoImprimir =
+                document.getElementById('btn-imprimir');
+
+            fichaCarregada = false;
+
+            botaoImprimir.disabled = true;
+
+            if (!aprIdValido) {
+
+                exibirStatus(
+                    'O identificador da APR é inválido.'
+                );
+
+                return;
+
+            }
 
             try {
-                const resp = await fetch(`${API_URL}/aprs/${encodeURIComponent(aprId)}`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`
+
+                // Consulta a APR utilizando a sessão autenticada.
+                // Não utiliza Bearer Token ou localStorage.
+
+                const resp = await AprApi.request(
+                    `/aprs/${encodeURIComponent(idNumerico)}`,
+                    {
+                        method: 'GET',
+                        cache: 'no-store',
+                        redirectOnUnauthorized: false
                     }
-                });
+                );
+
+
+                // Usuário não autenticado.
+
+                if (resp.status === 401) {
+
+                    redirecionarLogin();
+
+                    return;
+
+                }
+
+
+                // Falha na validação da sessão.
+
+                if (resp.status === 419) {
+
+                    exibirStatus(
+                        'A validação de segurança expirou. Atualize a página ou entre novamente.'
+                    );
+
+                    return;
+
+                }
+
+
+                // APR inexistente ou acesso não autorizado.
+
+                if (
+                    resp.status === 403 ||
+                    resp.status === 404
+                ) {
+
+                    exibirStatus(
+                        'APR não encontrada ou acesso não autorizado.'
+                    );
+
+                    return;
+
+                }
+
+
+                // Limitação de requisições.
+
+                if (resp.status === 429) {
+
+                    exibirStatus(
+                        'Muitas requisições. Aguarde antes de tentar novamente.'
+                    );
+
+                    return;
+
+                }
+
+
+                // Demais erros da API.
 
                 if (!resp.ok) {
-                    container.innerHTML = '<div class="aviso-status">Não foi possível localizar esta APR.</div>';
+
+                    exibirStatus(
+                        'Não foi possível carregar a APR. Tente novamente.'
+                    );
+
                     return;
+
                 }
 
                 const apr = await resp.json();
+
+                if (
+                    !apr ||
+                    Number(apr.id) !== idNumerico
+                ) {
+
+                    exibirStatus(
+                        'O servidor retornou um documento inválido.'
+                    );
+
+                    return;
+
+                }
+
                 const cli = apr.cliente || {};
 
+
+                // ==========================================
+                // DATA DE EMISSÃO
+                // ==========================================
+
                 let dia = '&nbsp;&nbsp;&nbsp;&nbsp;';
+
                 let mes = '&nbsp;&nbsp;&nbsp;&nbsp;';
+
                 let ano = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+
                 if (apr.data_emissao) {
-                    // Somente uma data no formato ISO pode entrar no HTML da ficha.
-                    const data = String(apr.data_emissao).split('T')[0];
-                    const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(data);
+
+                    const data = String(
+                        apr.data_emissao
+                    ).split('T')[0];
+
+                    const partes =
+                        /^(\d{4})-(\d{2})-(\d{2})$/.exec(data);
+
                     if (partes) {
+
                         ano = esc(partes[1]);
+
                         mes = esc(partes[2]);
+
                         dia = esc(partes[3]);
+
                     }
+
                 }
 
-                const etapas = apr.etapas || [];
-                const totalLinhasEtapas = Math.max(5, etapas.length);
+
+                // ==========================================
+                // ETAPAS DA ATIVIDADE
+                // ==========================================
+
+                const etapas = Array.isArray(apr.etapas)
+                    ? apr.etapas
+                    : [];
+
+                const totalLinhasEtapas = Math.max(
+                    5,
+                    etapas.length
+                );
+
                 let htmlEtapas = '';
+
                 for (let i = 0; i < totalLinhasEtapas; i++) {
+
                     const item = etapas[i];
+
+                    const numero = Number(
+                        item?.numero_etapa
+                    );
+
+                    const numeroEtapa =
+                        Number.isSafeInteger(numero) &&
+                        numero > 0
+
+                            ? numero
+
+                            : i + 1;
+
                     htmlEtapas += `
                         <tr>
-                            <td class="col-num">${item && Number.isSafeInteger(Number(item.numero_etapa)) && Number(item.numero_etapa) > 0 ? Number(item.numero_etapa) : (i + 1)}</td>
-                            <td class="col-desc texto-quebra">${item ? esc(item.descricao) : ''}</td>
-                            <td class="col-riscos texto-quebra">${item ? esc(item.riscos_envolvidos) : ''}</td>
-                            <td class="col-medidas texto-quebra">${item ? esc(item.medidas_controle) : ''}</td>
+
+                            <td class="col-num">
+                                ${numeroEtapa}
+                            </td>
+
+                            <td class="col-desc texto-quebra">
+                                ${item ? esc(item.descricao) : ''}
+                            </td>
+
+                            <td class="col-riscos texto-quebra">
+                                ${item ? esc(item.riscos_envolvidos) : ''}
+                            </td>
+
+                            <td class="col-medidas texto-quebra">
+                                ${item ? esc(item.medidas_controle) : ''}
+                            </td>
+
                         </tr>
                     `;
+
                 }
 
-                const executantes = apr.executantes || [];
-                const totalLinhasExec = Math.max(5, executantes.length);
+
+                // ==========================================
+                // EXECUTANTES
+                // ==========================================
+
+                const executantes =
+                    Array.isArray(apr.executantes)
+
+                        ? apr.executantes
+
+                        : [];
+
+                const totalLinhasExec = Math.max(
+                    5,
+                    executantes.length
+                );
+
                 let htmlExecutantes = '';
+
                 for (let i = 0; i < totalLinhasExec; i++) {
+
                     const exec = executantes[i];
+
                     htmlExecutantes += `
                         <tr>
-                            <td class="col-num">${i + 1}</td>
-                            <td style="width: 44.5%;">${exec ? esc(exec.nome) : ''}</td>
-                            <td style="width: 30%;">${exec ? esc(exec.funcao) : ''}</td>
-                            <td style="width: 20%; text-align: center;">${exec ? esc(exec.matricula) : ''}</td>
+
+                            <td class="col-num">
+                                ${i + 1}
+                            </td>
+
+                            <td style="width: 44.5%;">
+                                ${exec ? esc(exec.nome) : ''}
+                            </td>
+
+                            <td style="width: 30%;">
+                                ${exec ? esc(exec.funcao) : ''}
+                            </td>
+
+                            <td style="width: 20%; text-align: center;">
+                                ${exec ? esc(exec.matricula) : ''}
+                            </td>
+
                         </tr>
                     `;
+
                 }
 
+
+                // ==========================================
+                // MONTAGEM DO DOCUMENTO
+                // ==========================================
+
+                // Todos os dados externos inseridos no HTML
+                // passam pela função esc() ou por validação numérica.
+
                 container.innerHTML = `
+
                     <!-- Cabeçalho Institucional -->
+
                     <table class="tabela-cabecalho">
+
                         <tr>
+
                             <td class="bloco-logo">
-                                <img src="img/logo-senai.png" alt="SENAI" style="width: 132px; height: auto; display: inline-block;">
+
+                                <img
+                                    src="img/logo-senai.png"
+                                    alt="SENAI"
+                                    style="width: 132px; height: auto; display: inline-block;"
+                                >
+
                             </td>
+
                             <td class="bloco-titulo">
+
                                 ANÁLISE PRELIMINAR DE RISCO - APR
+
                             </td>
+
                             <td class="bloco-unidade">
+
                                 <strong>SENAI</strong><br>
+
                                 Av. Brasil, 2801.<br>
+
                                 Parque Res. Nardini<br>
+
                                 CEP: 13468-390<br>
+
                                 Americana - SP<br>
+
                                 Fone: (19) 3471-2600
+
                             </td>
+
                         </tr>
+
                     </table>
+
 
                     <!-- Dados do Cliente -->
+
                     <table>
+
                         <tr>
+
                             <td colspan="12" class="celula-campo">
-                                <span class="campo-label">CLIENTE</span>
-                                <div class="campo-valor">${esc(cli.nome)}</div>
+
+                                <span class="campo-label">
+                                    CLIENTE
+                                </span>
+
+                                <div class="campo-valor">
+                                    ${esc(cli.nome)}
+                                </div>
+
                             </td>
+
                         </tr>
+
                         <tr>
+
                             <td colspan="7" class="celula-campo">
-                                <span class="campo-label">ENDEREÇO</span>
-                                <div class="campo-valor">${esc(cli.endereco)}</div>
+
+                                <span class="campo-label">
+                                    ENDEREÇO
+                                </span>
+
+                                <div class="campo-valor">
+                                    ${esc(cli.endereco)}
+                                </div>
+
                             </td>
+
                             <td colspan="2" class="celula-campo">
-                                <span class="campo-label">N°.</span>
-                                <div class="campo-valor">${esc(cli.numero)}</div>
+
+                                <span class="campo-label">
+                                    Nº.
+                                </span>
+
+                                <div class="campo-valor">
+                                    ${esc(cli.numero)}
+                                </div>
+
                             </td>
+
                             <td colspan="3" class="celula-campo">
-                                <span class="campo-label">COMPLEMENTO</span>
-                                <div class="campo-valor">${esc(cli.complemento)}</div>
+
+                                <span class="campo-label">
+                                    COMPLEMENTO
+                                </span>
+
+                                <div class="campo-valor">
+                                    ${esc(cli.complemento)}
+                                </div>
+
                             </td>
+
                         </tr>
+
                         <tr>
+
                             <td colspan="5" class="celula-campo">
-                                <span class="campo-label">BAIRRO</span>
-                                <div class="campo-valor">${esc(cli.bairro)}</div>
+
+                                <span class="campo-label">
+                                    BAIRRO
+                                </span>
+
+                                <div class="campo-valor">
+                                    ${esc(cli.bairro)}
+                                </div>
+
                             </td>
+
                             <td colspan="5" class="celula-campo">
-                                <span class="campo-label">CIDADE</span>
-                                <div class="campo-valor">${esc(cli.cidade)}</div>
+
+                                <span class="campo-label">
+                                    CIDADE
+                                </span>
+
+                                <div class="campo-valor">
+                                    ${esc(cli.cidade)}
+                                </div>
+
                             </td>
+
                             <td colspan="2" class="celula-campo">
-                                <span class="campo-label">ESTADO</span>
-                                <div class="campo-valor">${esc(cli.estado)}</div>
+
+                                <span class="campo-label">
+                                    ESTADO
+                                </span>
+
+                                <div class="campo-valor">
+                                    ${esc(cli.estado)}
+                                </div>
+
                             </td>
+
                         </tr>
+
                         <tr>
+
                             <td colspan="3" class="celula-campo">
-                                <span class="campo-label">TEL. RESID.</span>
-                                <div class="campo-valor">${esc(cli.tel_residencial)}</div>
+
+                                <span class="campo-label">
+                                    TEL. RESID.
+                                </span>
+
+                                <div class="campo-valor">
+                                    ${esc(cli.tel_residencial)}
+                                </div>
+
                             </td>
+
                             <td colspan="3" class="celula-campo">
-                                <span class="campo-label">TEL. CEL.</span>
-                                <div class="campo-valor">${esc(cli.tel_celular)}</div>
+
+                                <span class="campo-label">
+                                    TEL. CEL.
+                                </span>
+
+                                <div class="campo-valor">
+                                    ${esc(cli.tel_celular)}
+                                </div>
+
                             </td>
+
                             <td colspan="6" class="celula-campo">
-                                <span class="campo-label">E-MAIL</span>
-                                <div class="campo-valor">${esc(cli.email)}</div>
+
+                                <span class="campo-label">
+                                    E-MAIL
+                                </span>
+
+                                <div class="campo-valor">
+                                    ${esc(cli.email)}
+                                </div>
+
                             </td>
+
                         </tr>
+
                     </table>
+
 
                     <!-- Local e Atividade -->
+
                     <table>
+
                         <tr>
+
                             <td class="linha-inline">
-                                <strong>LOCAL:</strong> ${esc(apr.local)}
+
+                                <strong>LOCAL:</strong>
+
+                                ${esc(apr.local)}
+
                             </td>
+
                         </tr>
+
                         <tr>
+
                             <td class="linha-inline">
-                                <strong>ATIVIDADE:</strong> ${esc(apr.atividade)}
+
+                                <strong>ATIVIDADE:</strong>
+
+                                ${esc(apr.atividade)}
+
                             </td>
+
                         </tr>
+
                     </table>
 
-                    <!-- Etapa da Atividade -->
+
+                    <!-- Etapas da Atividade -->
+
                     <table class="tabela-etapas">
+
                         <thead>
+
                             <tr>
-                                <th colspan="2" class="faixa-titulo">ETAPA DA ATIVIDADE</th>
-                                <th rowspan="2" class="faixa-titulo col-riscos">RISCOS ENVOLVIDOS</th>
-                                <th rowspan="2" class="faixa-titulo col-medidas">MEDIDAS DE CONTROLE DE RISCO</th>
+
+                                <th colspan="2" class="faixa-titulo">
+                                    ETAPA DA ATIVIDADE
+                                </th>
+
+                                <th rowspan="2" class="faixa-titulo col-riscos">
+                                    RISCOS ENVOLVIDOS
+                                </th>
+
+                                <th rowspan="2" class="faixa-titulo col-medidas">
+                                    MEDIDAS DE CONTROLE DE RISCO
+                                </th>
+
                             </tr>
+
                             <tr>
-                                <th class="faixa-titulo col-num">N°.</th>
-                                <th class="faixa-titulo col-desc">DESCRIÇÃO</th>
+
+                                <th class="faixa-titulo col-num">
+                                    Nº.
+                                </th>
+
+                                <th class="faixa-titulo col-desc">
+                                    DESCRIÇÃO
+                                </th>
+
                             </tr>
+
                         </thead>
+
                         <tbody>
+
                             ${htmlEtapas}
+
                         </tbody>
+
                     </table>
+
 
                     <!-- Executantes dos Serviços -->
+
                     <table class="tabela-executantes">
+
                         <thead>
+
                             <tr>
-                                <th colspan="4" class="faixa-titulo">EXECUTANTES DOS SERVIÇOS</th>
+
+                                <th colspan="4" class="faixa-titulo">
+                                    EXECUTANTES DOS SERVIÇOS
+                                </th>
+
                             </tr>
+
                             <tr>
-                                <th class="faixa-titulo col-num">N°.</th>
-                                <th class="faixa-titulo" style="width: 44.5%;">NOME</th>
-                                <th class="faixa-titulo" style="width: 30%;">FUNÇÃO</th>
-                                <th class="faixa-titulo" style="width: 20%;">MATRÍCULA</th>
+
+                                <th class="faixa-titulo col-num">
+                                    Nº.
+                                </th>
+
+                                <th class="faixa-titulo" style="width: 44.5%;">
+                                    NOME
+                                </th>
+
+                                <th class="faixa-titulo" style="width: 30%;">
+                                    FUNÇÃO
+                                </th>
+
+                                <th class="faixa-titulo" style="width: 20%;">
+                                    MATRÍCULA
+                                </th>
+
                             </tr>
+
                         </thead>
+
                         <tbody>
+
                             ${htmlExecutantes}
+
                         </tbody>
+
                     </table>
+
 
                     <!-- Responsável Técnico -->
+
                     <table class="tabela-responsavel">
+
                         <thead>
+
                             <tr>
-                                <th class="faixa-titulo">RESPONSÁVEL TÉCNICO</th>
+
+                                <th class="faixa-titulo">
+                                    RESPONSÁVEL TÉCNICO
+                                </th>
+
                             </tr>
+
                         </thead>
+
                         <tbody>
+
                             <tr>
+
                                 <td>
-                                    <strong>NOME:</strong> ${esc(apr.responsavel_nome)}
+
+                                    <strong>NOME:</strong>
+
+                                    ${esc(apr.responsavel_nome)}
+
                                 </td>
+
                             </tr>
+
                             <tr>
+
                                 <td class="linha-assinatura">
+
                                     <strong>ASSINATURA:</strong>
+
                                 </td>
+
                             </tr>
+
                             <tr>
+
                                 <td>
-                                    <strong>DATA:</strong> &nbsp; ${dia} &nbsp;/&nbsp; ${mes} &nbsp;/&nbsp; ${ano}
+
+                                    <strong>DATA:</strong>
+
+                                    &nbsp; ${dia}
+
+                                    &nbsp;/&nbsp; ${mes}
+
+                                    &nbsp;/&nbsp; ${ano}
+
                                 </td>
+
                             </tr>
+
                         </tbody>
+
                     </table>
+
                 `;
+
+
+                // Libera a impressão somente após carregar a ficha.
+
+                fichaCarregada = true;
+
+                botaoImprimir.disabled = false;
+
             } catch (e) {
-                container.innerHTML = '<div class="aviso-status">Erro ao conectar com o servidor Laravel.</div>';
+
+                exibirStatus(
+                    'Erro ao conectar com o servidor Laravel ou processar o documento.'
+                );
+
             }
+
         }
 
-        if (aprIdValido) carregarFicha();
+
+        // ==========================================
+        // INICIALIZAÇÃO
+        // ==========================================
+
+        carregarFicha();
+
     </script>
+
 </body>
+
 </html>

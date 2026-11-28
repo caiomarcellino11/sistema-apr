@@ -13,7 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+
     ->withMiddleware(function (Middleware $middleware): void {
+
+        // Habilita a autenticacao por sessao via Sanctum.
+        $middleware->statefulApi();
 
         // Registra o middleware de controle de acesso.
         $middleware->alias([
@@ -21,8 +25,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
     })
+
     ->withExceptions(function (Exceptions $exceptions): void {
+
+        // Padroniza as respostas de erro da API em JSON.
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+            fn (Request $request) =>
+                $request->is('api/*') || $request->expectsJson(),
         );
+
     })->create();

@@ -3,24 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Painel do Aluno - Sistema APR</title>
+
     <link rel="stylesheet" href="style.css">
+
     <style>
         .header-actions {
             display: flex;
             align-items: center;
             gap: 14px;
         }
+
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 14px;
         }
+
         .grid-3 {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
             gap: 14px;
         }
+
         .bloco-item {
             border: 1px solid #d1d5db;
             border-radius: 6px;
@@ -28,12 +34,14 @@
             margin-bottom: 14px;
             background-color: #f9fafb;
         }
+
         .bloco-topo {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
         }
+
         .catalogo-box {
             background-color: var(--senai-vermelho-claro);
             border: 1px solid #ffc4c4;
@@ -41,9 +49,11 @@
             border-radius: 6px;
             margin-bottom: 12px;
         }
+
         .catalogo-box label {
             color: var(--senai-vermelho-escuro);
         }
+
         .historico-box {
             background-color: #f0fdf4;
             border: 1px solid #bbf7d0;
@@ -51,38 +61,46 @@
             border-radius: 6px;
             margin-bottom: 18px;
         }
+
         .historico-box select {
             width: 100%;
         }
+
         .historico-box small {
             display: block;
             margin-top: 8px;
             color: #4b5563;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
         }
+
         th, td {
             border-bottom: 1px solid #e5e7eb;
             padding: 10px 8px;
             text-align: left;
             font-size: 0.92rem;
         }
+
         th {
             background-color: var(--senai-grafite);
             color: var(--senai-branco);
             font-weight: 600;
         }
+
         .acoes-tabela {
             display: flex;
             gap: 8px;
         }
+
         .btn-sm {
             padding: 6px 10px;
             font-size: 0.85rem;
         }
+
         .sub-card {
             border: 1px dashed #9ca3af;
             padding: 16px;
@@ -91,342 +109,495 @@
             margin-bottom: 16px;
             background-color: #f9fafb;
         }
+
         @media (max-width: 768px) {
             .grid-2, .grid-3 {
                 grid-template-columns: 1fr;
             }
         }
     </style>
+
 </head>
+
 <body>
+
     <header class="topbar">
+
         <div class="marca">
-            <img src="img/logo-senai.png" alt="SENAI" class="logo-senai">
+
+            <img
+                src="img/logo-senai.png"
+                alt="SENAI"
+                class="logo-senai"
+            >
+
             <h1>Sistema APR — Painel do Aluno</h1>
+
         </div>
+
         <div class="header-actions">
+
             <span id="nome-aluno"></span>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="sair()">Sair</button>
+
+            <button
+                type="button"
+                id="btn-sair"
+                class="btn btn-secondary btn-sm"
+                onclick="sair()"
+                disabled
+            >
+                Sair
+            </button>
+
         </div>
+
     </header>
 
     <main class="container">
-        <div id="alerta-geral" class="alerta"></div>
+
+        <div
+            id="alerta-geral"
+            class="alerta"
+            role="alert"
+            aria-live="polite"
+        ></div>
 
         <!-- Lista de APRs do Aluno -->
-        <section class="card">
+
+        <section id="secao-lista-aprs" class="card hidden">
+
             <div class="bloco-topo">
+
                 <h2>Minhas APRs Registradas</h2>
-                <button type="button" class="btn btn-primary" onclick="alternarFormularioApr()">+ Nova APR</button>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="alternarFormularioApr()"
+                >
+                    + Nova APR
+                </button>
+
             </div>
+
             <div id="lista-aprs">
                 <p>Carregando suas APRs...</p>
             </div>
+
         </section>
 
         <!-- Formulário de Nova APR -->
+
         <section id="secao-nova-apr" class="card hidden">
+
             <div class="bloco-topo">
+
                 <h2>Preencher Nova APR</h2>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="alternarFormularioApr()">Fechar</button>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    onclick="alternarFormularioApr()"
+                >
+                    Fechar
+                </button>
+
             </div>
 
             <form id="form-apr" onsubmit="salvarApr(event)">
-                <!-- Reutiliza somente dados básicos de uma APR do próprio usuário. -->
+
+                <!-- Histórico de APRs -->
+
                 <div class="historico-box">
-                    <label for="historico_apr">Reutilizar dados de uma APR anterior (opcional)</label>
-                    <select id="historico_apr" onchange="reutilizarDadosApr()" disabled>
-                        <option value="">Carregando histórico de APRs...</option>
+
+                    <label for="historico_apr">
+                        Reutilizar dados de uma APR anterior (opcional)
+                    </label>
+
+                    <select
+                        id="historico_apr"
+                        onchange="reutilizarDadosApr()"
+                        disabled
+                    >
+                        <option value="">
+                            Carregando histórico de APRs...
+                        </option>
                     </select>
+
                     <small>
-                        Copia cliente, local, atividade, responsável técnico, as etapas
-                        (descrição, riscos e EPIs) e os executantes (nome, função e RA).
-                        A data de emissão continua sendo a de hoje. Revise tudo antes de salvar.
+                        Copia cliente, local, atividade, responsável técnico,
+                        as etapas (descrição, riscos e EPIs) e os executantes
+                        (nome, função e RA).
+
+                        A data de emissão continua sendo a de hoje.
+                        Revise tudo antes de salvar.
                     </small>
+
                 </div>
 
-                <!-- Seleção / Cadastro de Cliente -->
+                <!-- Seleção e cadastro de cliente -->
+
                 <div class="form-group">
+
                     <label for="cliente_id">Cliente / Empresa</label>
+
                     <div style="display: flex; gap: 10px;">
+
                         <select id="cliente_id" required>
-                            <option value="">Selecione um cliente...</option>
+                            <option value="">
+                                Selecione um cliente...
+                            </option>
                         </select>
-                        <button type="button" class="btn btn-secondary" onclick="toggleNovoCliente()">+ Novo Cliente</button>
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="toggleNovoCliente()"
+                        >
+                            + Novo Cliente
+                        </button>
+
                     </div>
+
                 </div>
 
-                <!-- Sub-formulário rápido para cadastrar Cliente -->
+                <!-- Cadastro rápido de cliente -->
+
                 <div id="box-novo-cliente" class="sub-card hidden">
-                    <h4 style="margin-bottom: 4px;">Cadastrar Novo Cliente</h4>
-                    <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 12px;">Já vem preenchido com os dados do SENAI Americana. Altere se o cliente for outro.</p>
+
+                    <h4 style="margin-bottom: 4px;">
+                        Cadastrar Novo Cliente
+                    </h4>
+
+                    <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 12px;">
+                        Já vem preenchido com os dados do SENAI Americana.
+                        Altere se o cliente for outro.
+                    </p>
+
                     <div class="grid-2">
+
                         <div class="form-group">
-                            <label>Nome / Razão Social *</label>
-                            <input type="text" id="cli-nome" value="SENAI Americana" placeholder="Ex: Metalúrgica Americana Ltda">
+
+                            <label for="cli-nome">
+                                Nome / Razão Social *
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cli-nome"
+                                value="SENAI Americana"
+                                placeholder="Ex: Metalúrgica Americana Ltda"
+                            >
+
                         </div>
+
                         <div class="form-group">
-                            <label>E-mail *</label>
-                            <input type="email" id="cli-email" value="secretaria507@sp.senai.br" placeholder="contato@empresa.com.br">
+
+                            <label for="cli-email">E-mail *</label>
+
+                            <input
+                                type="email"
+                                id="cli-email"
+                                value="secretaria507@sp.senai.br"
+                                placeholder="contato@empresa.com.br"
+                            >
+
                         </div>
+
                     </div>
+
                     <div class="grid-3">
+
                         <div class="form-group">
-                            <label>Endereço *</label>
-                            <input type="text" id="cli-endereco" value="Av. Brasil" placeholder="Av. Brasil">
+
+                            <label for="cli-endereco">Endereço *</label>
+
+                            <input
+                                type="text"
+                                id="cli-endereco"
+                                value="Av. Brasil"
+                                placeholder="Av. Brasil"
+                            >
+
                         </div>
+
                         <div class="form-group">
-                            <label>Número *</label>
-                            <input type="text" id="cli-numero" value="2801" placeholder="2801">
+
+                            <label for="cli-numero">Número *</label>
+
+                            <input
+                                type="text"
+                                id="cli-numero"
+                                value="2801"
+                                placeholder="2801"
+                            >
+
                         </div>
+
                         <div class="form-group">
-                            <label>Complemento</label>
-                            <input type="text" id="cli-complemento" placeholder="Galpão 2">
+
+                            <label for="cli-complemento">
+                                Complemento
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cli-complemento"
+                                placeholder="Galpão 2"
+                            >
+
                         </div>
+
                     </div>
+
                     <div class="grid-3">
+
                         <div class="form-group">
-                            <label>Bairro *</label>
-                            <input type="text" id="cli-bairro" value="Parque Residencial Nardini" placeholder="Jardim Glória">
+
+                            <label for="cli-bairro">Bairro *</label>
+
+                            <input
+                                type="text"
+                                id="cli-bairro"
+                                value="Parque Residencial Nardini"
+                                placeholder="Jardim Glória"
+                            >
+
                         </div>
+
                         <div class="form-group">
-                            <label>Cidade *</label>
-                            <input type="text" id="cli-cidade" value="Americana">
+
+                            <label for="cli-cidade">Cidade *</label>
+
+                            <input
+                                type="text"
+                                id="cli-cidade"
+                                value="Americana"
+                            >
+
                         </div>
+
                         <div class="form-group">
-                            <label>Estado (UF) *</label>
-                            <input type="text" id="cli-estado" value="SP" maxlength="2">
+
+                            <label for="cli-estado">
+                                Estado (UF) *
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cli-estado"
+                                value="SP"
+                                maxlength="2"
+                            >
+
                         </div>
+
                     </div>
+
                     <div class="grid-2">
+
                         <div class="form-group">
-                            <label>Telefone Fixo</label>
-                            <input type="text" id="cli-tel-res" value="(19) 3471-2600" placeholder="(19) 3461-0000">
+
+                            <label for="cli-tel-res">Telefone Fixo</label>
+
+                            <input
+                                type="text"
+                                id="cli-tel-res"
+                                value="(19) 3471-2600"
+                                placeholder="(19) 3461-0000"
+                            >
+
                         </div>
+
                         <div class="form-group">
-                            <label>Telefone Celular *</label>
-                            <input type="text" id="cli-tel-cel" value="(19) 3471-2600" placeholder="(19) 99999-0000">
+
+                            <label for="cli-tel-cel">
+                                Telefone Celular *
+                            </label>
+
+                            <input
+                                type="text"
+                                id="cli-tel-cel"
+                                value="(19) 3471-2600"
+                                placeholder="(19) 99999-0000"
+                            >
+
                         </div>
+
                     </div>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="cadastrarCliente()">Salvar Cliente</button>
+
+                    <button
+                        type="button"
+                        id="btn-salvar-cliente"
+                        class="btn btn-primary btn-sm"
+                        onclick="cadastrarCliente()"
+                    >
+                        Salvar Cliente
+                    </button>
+
                 </div>
 
-                <!-- Cabeçalho da Atividade -->
+                <!-- Cabeçalho da atividade -->
+
                 <div class="grid-2">
+
                     <div class="form-group">
-                        <label for="local">Local do Serviço *</label>
-                        <input type="text" id="local" required placeholder="Ex: Oficina de Manutenção Elétrica">
+
+                        <label for="local">
+                            Local do Serviço *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="local"
+                            required
+                            placeholder="Ex: Oficina de Manutenção"
+                        >
+
                     </div>
+
                     <div class="form-group">
-                        <label for="data_emissao">Data de Emissão *</label>
-                        <input type="date" id="data_emissao" required>
+
+                        <label for="data_emissao">
+                            Data de Emissão *
+                        </label>
+
+                        <input
+                            type="date"
+                            id="data_emissao"
+                            required
+                        >
+
                     </div>
+
                 </div>
 
                 <div class="form-group">
-                    <label for="atividade">Atividade a ser Executada *</label>
-                    <input type="text" id="atividade" required placeholder="Ex: Revisão e troca de disjuntores no painel principal">
+
+                    <label for="atividade">
+                        Atividade a ser Executada *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="atividade"
+                        required
+                        placeholder="Descreva a atividade"
+                    >
+
                 </div>
 
                 <div class="grid-2">
+
                     <div class="form-group">
-                        <label for="responsavel_nome">Responsável Técnico (Instrutor / Engenheiro) *</label>
-                        <input type="text" id="responsavel_nome" required placeholder="Nome do responsável">
+
+                        <label for="responsavel_nome">
+                            Responsável Técnico (Instrutor / Engenheiro) *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="responsavel_nome"
+                            required
+                            placeholder="Nome do responsável"
+                        >
+
                     </div>
+
                     <div class="form-group">
-                        <label for="responsavel_crea">Registro CREA / CFT (opcional)</label>
-                        <input type="text" id="responsavel_crea" placeholder="Ex: SP-506123456/D">
+
+                        <label for="responsavel_crea">
+                            Registro CREA / CFT (opcional)
+                        </label>
+
+                        <input
+                            type="text"
+                            id="responsavel_crea"
+                            placeholder="Ex: SP-506123456/D"
+                        >
+
                     </div>
+
                 </div>
 
                 <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e5e7eb;">
 
-                <!-- Etapas com Catálogo Automático de Riscos e EPIs -->
+                <!-- Etapas da atividade -->
+
                 <div class="bloco-topo">
+
                     <h3>Etapas da Atividade, Riscos e EPIs</h3>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="adicionarEtapa()">+ Adicionar Etapa</button>
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        onclick="adicionarEtapa()"
+                    >
+                        + Adicionar Etapa
+                    </button>
+
                 </div>
+
                 <div id="container-etapas"></div>
 
                 <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e5e7eb;">
 
                 <!-- Executantes -->
+
                 <div class="bloco-topo">
+
                     <h3>Executantes da Atividade (Equipe)</h3>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="adicionarExecutante()">+ Adicionar Executante</button>
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        onclick="adicionarExecutante()"
+                    >
+                        + Adicionar Executante
+                    </button>
+
                 </div>
+
                 <div id="container-executantes"></div>
 
                 <div style="margin-top: 20px; text-align: right;">
-                    <button type="submit" class="btn btn-primary">Salvar APR e Gerar Ficha</button>
+
+                    <button
+                        type="submit"
+                        id="btn-salvar-apr"
+                        class="btn btn-primary"
+                    >
+                        Salvar APR e Gerar Ficha
+                    </button>
+
                 </div>
+
             </form>
+
         </section>
+
     </main>
 
+    <!-- Serviço centralizado da API -->
+
+    <script src="js/api.js"></script>
+
     <script>
-        const API_URL = 'http://127.0.0.1:8000/api';
-        const token = localStorage.getItem('apr_token');
-        const user = JSON.parse(localStorage.getItem('apr_user') || 'null');
 
-        if (!token || !user) {
-            window.location.href = 'index.html';
-        }
+        'use strict';
 
-        document.getElementById('nome-aluno').textContent = `Olá, ${user.name}`;
-        document.getElementById('data_emissao').valueAsDate = new Date();
-
+        let user = null;
         let catalogoRiscos = [];
         let historicoAprs = [];
+        let listaClientes = [];
+        let clienteSenaiId = null;
+        let alertaTimeout = null;
+        let redirecionando = false;
 
-        // Utiliza a listagem já autenticada de /api/aprs.
-        // new Option insere os nomes como TEXTO e não interpreta HTML (proteção XSS).
-        function atualizarHistoricoAprs(aprs) {
-            historicoAprs = Array.isArray(aprs) ? aprs : [];
+        const exclusoesEmAndamento = new Set();
 
-            const select = document.getElementById('historico_apr');
-            const selecaoAnterior = select.value;
-            select.replaceChildren(new Option('Preencher manualmente', ''));
+        // Dados padrão do cliente SENAI Americana.
 
-            historicoAprs.forEach(apr => {
-                const id = Number(apr.id);
-                if (!Number.isSafeInteger(id) || id <= 0) return;
-
-                const atividade = String(apr.atividade ?? 'Sem descrição');
-                const nomeCliente = String(apr.cliente?.nome ?? 'Cliente não informado');
-                const textoOpcao = `APR #${id} — ${atividade} — ${nomeCliente}`;
-                select.add(new Option(textoOpcao, String(id)));
-            });
-
-            select.disabled = select.options.length <= 1;
-            if (Array.from(select.options).some(op => op.value === selecaoAnterior)) {
-                select.value = selecaoAnterior;
-            }
-        }
-
-        function reutilizarDadosApr() {
-            const select = document.getElementById('historico_apr');
-            const id = Number(select.value);
-            if (!Number.isSafeInteger(id) || id <= 0) return;
-
-            const apr = historicoAprs.find(item => Number(item.id) === id);
-            if (!apr) {
-                mostrarAlerta('APR anterior não encontrada. Atualize a página.', 'erro');
-                select.value = '';
-                return;
-            }
-
-            // Não sobrescreve informações já digitadas sem autorização.
-            // (O cliente SENAI selecionado automaticamente e o nome padrão do executante não contam.)
-            const campos = ['local', 'atividade', 'responsavel_nome', 'responsavel_crea'];
-            const clienteAtual = document.getElementById('cliente_id').value;
-            const etapaDigitada = Array.from(document.querySelectorAll(
-                '.etapa-descricao, .etapa-riscos, .etapa-medidas'
-            )).some(el => el.value.trim() !== '');
-            const jaPreenchidos = campos.some(campo =>
-                document.getElementById(campo).value.trim() !== ''
-            ) || etapaDigitada || (clienteAtual !== '' && clienteAtual !== clienteSenaiId);
-            if (jaPreenchidos && !window.confirm(
-                'Substituir o que já foi preenchido pelos dados da APR selecionada?'
-            )) {
-                select.value = '';
-                return;
-            }
-
-            const selectCliente = document.getElementById('cliente_id');
-            const clienteId = String(apr.cliente_id ?? '');
-            const clienteDisponivel = Array.from(selectCliente.options)
-                .some(opcao => opcao.value === clienteId && clienteId !== '');
-
-            selectCliente.value = clienteDisponivel ? clienteId : '';
-            document.getElementById('local').value = String(apr.local ?? '');
-            document.getElementById('atividade').value = String(apr.atividade ?? '');
-            document.getElementById('responsavel_nome').value = String(apr.responsavel_nome ?? '');
-            document.getElementById('responsavel_crea').value = String(apr.responsavel_crea ?? '');
-
-            // Etapas: recria os blocos com descrição, riscos e EPIs da APR anterior.
-            const etapas = Array.isArray(apr.etapas) ? [...apr.etapas] : [];
-            etapas.sort((a, b) => Number(a.numero_etapa ?? 0) - Number(b.numero_etapa ?? 0));
-            if (etapas.length) {
-                document.getElementById('container-etapas').replaceChildren();
-                etapas.forEach(etapa => {
-                    adicionarEtapa();
-                    const bloco = document.querySelector('#container-etapas .etapa-item:last-child');
-                    bloco.querySelector('.etapa-descricao').value = String(etapa.descricao ?? '');
-                    bloco.querySelector('.etapa-riscos').value = String(etapa.riscos_envolvidos ?? '');
-                    bloco.querySelector('.etapa-medidas').value = String(etapa.medidas_controle ?? '');
-                });
-            }
-
-            // Executantes: recria os blocos com nome, função e matrícula/RA.
-            const executantes = Array.isArray(apr.executantes) ? apr.executantes : [];
-            if (executantes.length) {
-                document.getElementById('container-executantes').replaceChildren();
-                executantes.forEach(exec => {
-                    adicionarExecutante(String(exec.nome ?? ''));
-                    const bloco = document.querySelector('#container-executantes .executante-item:last-child');
-                    bloco.querySelector('.exec-funcao').value = String(exec.funcao ?? '');
-                    bloco.querySelector('.exec-matricula').value = String(exec.matricula ?? '');
-                });
-            }
-
-            // A data de emissão continua sendo a da NOVA APR (hoje).
-            if (!clienteDisponivel) {
-                mostrarAlerta(
-                    'Dados recuperados. O cliente anterior não está disponível: selecione um cliente.',
-                    'erro'
-                );
-                return;
-            }
-            mostrarAlerta('Dados recuperados. Confira as informações antes de salvar a nova APR.');
-        }
-
-        function headersAuth() {
-            return {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`
-            };
-        }
-
-        function mostrarAlerta(texto, tipo = 'sucesso') {
-            const el = document.getElementById('alerta-geral');
-            el.textContent = texto;
-            el.className = `alerta ${tipo}`;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            setTimeout(() => { el.className = 'alerta'; }, 5000);
-        }
-
-        async function sair() {
-            try {
-                await fetch(`${API_URL}/logout`, { method: 'POST', headers: headersAuth() });
-            } catch (e) {}
-            localStorage.removeItem('apr_token');
-            localStorage.removeItem('apr_user');
-            window.location.href = 'index.html';
-        }
-
-        function alternarFormularioApr() {
-            const sec = document.getElementById('secao-nova-apr');
-            sec.classList.toggle('hidden');
-        }
-
-        function toggleNovoCliente() {
-            document.getElementById('box-novo-cliente').classList.toggle('hidden');
-        }
-
-        async function inicializar() {
-            await Promise.all([
-                carregarCatalogoRiscos(),
-                carregarClientes(),
-                carregarAprs()
-            ]);
-            await garantirClienteSenai();
-            adicionarEtapa();
-            adicionarExecutante(user.name);
-        }
-
-        // Dados fixos do SENAI Americana, cliente padrão das APRs.
         const CLIENTE_SENAI = {
             nome: 'SENAI Americana',
             email: 'secretaria507@sp.senai.br',
@@ -439,387 +610,1572 @@
             tel_residencial: '(19) 3471-2600',
             tel_celular: '(19) 3471-2600'
         };
-        let clienteSenaiId = null;
 
-        // Procura o SENAI Americana na lista do usuário. Se não existir, cadastra uma única vez.
-        // Depois deixa ele selecionado em "Cliente / Empresa".
-        async function garantirClienteSenai() {
+
+        // ==========================================
+        // AUTENTICAÇÃO E SEGURANÇA
+        // ==========================================
+
+        function limparAutenticacaoAntiga() {
+
             try {
+                localStorage.removeItem('apr_token');
+                localStorage.removeItem('apr_user');
+            } catch {
+                // A autenticação não depende do localStorage.
+            }
+
+        }
+
+        function redirecionarLogin(expirada = false) {
+
+            if (redirecionando) return;
+
+            redirecionando = true;
+            user = null;
+
+            limparAutenticacaoAntiga();
+
+            document
+                .getElementById('secao-lista-aprs')
+                .classList.add('hidden');
+
+            document
+                .getElementById('secao-nova-apr')
+                .classList.add('hidden');
+
+            document.getElementById('nome-aluno').textContent = '';
+
+            window.location.replace(
+                expirada
+                    ? 'index.html?session=expired'
+                    : 'index.html'
+            );
+
+        }
+
+        /**
+         * Centraliza o tratamento das respostas de autenticação.
+         */
+        async function requisitar(endpoint, options = {}) {
+
+            if (redirecionando) {
+                throw new Error('Sessão encerrada.');
+            }
+
+            const resp = await AprApi.request(endpoint, {
+                ...options,
+                redirectOnUnauthorized: false
+            });
+
+            if (resp.status === 401) {
+
+                redirecionarLogin(true);
+
+                throw new Error(
+                    'Sua sessão expirou. Entre novamente.'
+                );
+
+            }
+
+            if (resp.status === 419) {
+
+                // Renova o CSRF sem repetir automaticamente
+                // operações de cadastro, atualização ou exclusão.
+
+                try {
+                    await AprApi.initializeCsrf();
+                } catch {
+                    // Uma nova tentativa poderá inicializar o CSRF.
+                }
+
+                throw new Error(
+                    'A validação de segurança expirou. Tente novamente.'
+                );
+
+            }
+
+            if (resp.status === 429) {
+
+                throw new Error(
+                    'Muitas requisições. Aguarde antes de tentar novamente.'
+                );
+
+            }
+
+            if (resp.status >= 500) {
+
+                throw new Error(
+                    'O servidor apresentou um erro. Tente novamente.'
+                );
+
+            }
+
+            return resp;
+
+        }
+
+        /**
+         * Obtém o usuário diretamente do servidor Laravel.
+         */
+        async function verificarSessao() {
+
+            limparAutenticacaoAntiga();
+
+            const resp = await requisitar('/user', {
+                method: 'GET',
+                cache: 'no-store'
+            });
+
+            if (!resp.ok) {
+
+                throw new Error(
+                    'Não foi possível verificar a sessão.'
+                );
+
+            }
+
+            const dados = await resp.json();
+
+            if (!dados.id || typeof dados.name !== 'string') {
+
+                throw new Error(
+                    'O servidor retornou um usuário inválido.'
+                );
+
+            }
+
+            user = dados;
+
+            document.getElementById('nome-aluno').textContent =
+                `Olá, ${user.name}`;
+
+            document.getElementById('btn-sair').disabled = false;
+
+        }
+
+        /**
+         * Encerra a sessão no servidor.
+         */
+        async function sair() {
+
+            const botao = document.getElementById('btn-sair');
+
+            if (botao.disabled) return;
+
+            botao.disabled = true;
+
+            try {
+
+                const resp = await requisitar('/logout', {
+                    method: 'POST'
+                });
+
+                if (!resp.ok) {
+
+                    throw new Error(
+                        'Não foi possível encerrar a sessão.'
+                    );
+
+                }
+
+                redirecionarLogin();
+
+            } catch (e) {
+
+                if (!redirecionando) {
+
+                    mostrarAlerta(
+                        e.message || 'Erro ao realizar logout.',
+                        'erro'
+                    );
+
+                    botao.disabled = false;
+
+                }
+
+            }
+
+        }
+
+
+        // ==========================================
+        // MENSAGENS E UTILITÁRIOS
+        // ==========================================
+
+        function mostrarAlerta(texto, tipo = 'sucesso') {
+
+            if (redirecionando) return;
+
+            const el = document.getElementById('alerta-geral');
+
+            clearTimeout(alertaTimeout);
+
+            el.textContent = texto;
+            el.className = `alerta ${tipo}`;
+
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+
+            alertaTimeout = setTimeout(() => {
+
+                el.className = 'alerta';
+                el.textContent = '';
+
+            }, 5000);
+
+        }
+
+        function obterMensagemErro(dados, mensagemPadrao) {
+
+            const primeiroErro = dados.errors
+                ? Object.values(dados.errors)[0]?.[0]
+                : null;
+
+            return primeiroErro ||
+                dados.message ||
+                mensagemPadrao;
+
+        }
+
+        function definirDataAtual() {
+
+            const hoje = new Date();
+
+            const ano = hoje.getFullYear();
+
+            const mes = String(
+                hoje.getMonth() + 1
+            ).padStart(2, '0');
+
+            const dia = String(
+                hoje.getDate()
+            ).padStart(2, '0');
+
+            document.getElementById('data_emissao').value =
+                `${ano}-${mes}-${dia}`;
+
+        }
+
+        function alternarFormularioApr() {
+
+            if (!user || redirecionando) return;
+
+            document
+                .getElementById('secao-nova-apr')
+                .classList.toggle('hidden');
+
+        }
+
+        function toggleNovoCliente() {
+
+            document
+                .getElementById('box-novo-cliente')
+                .classList.toggle('hidden');
+
+        }
+
+
+        // ==========================================
+        // HISTÓRICO E DUPLICAÇÃO DE APRS
+        // ==========================================
+
+        function atualizarHistoricoAprs(aprs) {
+
+            historicoAprs = Array.isArray(aprs) ? aprs : [];
+
+            const select = document.getElementById('historico_apr');
+
+            const selecaoAnterior = select.value;
+
+            select.replaceChildren(
+                new Option('Preencher manualmente', '')
+            );
+
+            historicoAprs.forEach(apr => {
+
+                const id = Number(apr.id);
+
+                if (!Number.isSafeInteger(id) || id <= 0) {
+                    return;
+                }
+
+                const atividade = String(
+                    apr.atividade ?? 'Sem descrição'
+                );
+
+                const nomeCliente = String(
+                    apr.cliente?.nome ?? 'Cliente não informado'
+                );
+
+                const textoOpcao =
+                    `APR #${id} — ${atividade} — ${nomeCliente}`;
+
+                select.add(
+                    new Option(textoOpcao, String(id))
+                );
+
+            });
+
+            select.disabled = select.options.length <= 1;
+
+            if (
+                Array.from(select.options).some(
+                    op => op.value === selecaoAnterior
+                )
+            ) {
+                select.value = selecaoAnterior;
+            }
+
+        }
+
+        function reutilizarDadosApr() {
+
+            const select = document.getElementById('historico_apr');
+
+            const id = Number(select.value);
+
+            if (!Number.isSafeInteger(id) || id <= 0) return;
+
+            const apr = historicoAprs.find(
+                item => Number(item.id) === id
+            );
+
+            if (!apr) {
+
+                mostrarAlerta(
+                    'APR anterior não encontrada. Atualize a página.',
+                    'erro'
+                );
+
+                select.value = '';
+
+                return;
+
+            }
+
+            const campos = [
+                'local',
+                'atividade',
+                'responsavel_nome',
+                'responsavel_crea'
+            ];
+
+            const clienteAtual =
+                document.getElementById('cliente_id').value;
+
+            const etapaDigitada = Array.from(
+                document.querySelectorAll(
+                    '.etapa-descricao, .etapa-riscos, .etapa-medidas'
+                )
+            ).some(el => el.value.trim() !== '');
+
+            const executanteDigitado = Array.from(
+                document.querySelectorAll('.executante-item')
+            ).some((el, indice) => {
+
+                const nome = el.querySelector('.exec-nome').value.trim();
+
+                const funcao = el.querySelector('.exec-funcao').value.trim();
+
+                const matricula = el.querySelector('.exec-matricula').value.trim();
+
+                const nomePadrao =
+                    indice === 0 ? String(user?.name ?? '').trim() : '';
+
+                return nome !== nomePadrao ||
+                    funcao !== '' ||
+                    matricula !== '';
+
+            });
+
+            const jaPreenchidos = campos.some(campo =>
+
+                document.getElementById(campo).value.trim() !== ''
+
+            ) || etapaDigitada ||
+                executanteDigitado ||
+                (clienteAtual !== '' && clienteAtual !== clienteSenaiId);
+
+            if (
+                jaPreenchidos &&
+                !window.confirm(
+                    'Substituir o que já foi preenchido pelos dados da APR selecionada?'
+                )
+            ) {
+
+                select.value = '';
+
+                return;
+
+            }
+
+            const selectCliente =
+                document.getElementById('cliente_id');
+
+            const clienteId = String(apr.cliente_id ?? '');
+
+            const clienteDisponivel = Array.from(
+                selectCliente.options
+            ).some(opcao =>
+                opcao.value === clienteId && clienteId !== ''
+            );
+
+            selectCliente.value =
+                clienteDisponivel ? clienteId : '';
+
+            document.getElementById('local').value =
+                String(apr.local ?? '');
+
+            document.getElementById('atividade').value =
+                String(apr.atividade ?? '');
+
+            document.getElementById('responsavel_nome').value =
+                String(apr.responsavel_nome ?? '');
+
+            document.getElementById('responsavel_crea').value =
+                String(apr.responsavel_crea ?? '');
+
+
+            // Recupera as etapas da APR anterior.
+
+            const etapas = Array.isArray(apr.etapas)
+                ? [...apr.etapas]
+                : [];
+
+            etapas.sort((a, b) =>
+                Number(a.numero_etapa ?? 0) -
+                Number(b.numero_etapa ?? 0)
+            );
+
+            document
+                .getElementById('container-etapas')
+                .replaceChildren();
+
+            if (etapas.length) {
+
+                etapas.forEach(etapa => {
+
+                    adicionarEtapa();
+
+                    const bloco = document.querySelector(
+                        '#container-etapas .etapa-item:last-child'
+                    );
+
+                    bloco.querySelector('.etapa-descricao').value =
+                        String(etapa.descricao ?? '');
+
+                    bloco.querySelector('.etapa-riscos').value =
+                        String(etapa.riscos_envolvidos ?? '');
+
+                    bloco.querySelector('.etapa-medidas').value =
+                        String(etapa.medidas_controle ?? '');
+
+                });
+
+            } else {
+
+                adicionarEtapa();
+
+            }
+
+
+            // Recupera os executantes da APR anterior.
+
+            const executantes = Array.isArray(apr.executantes)
+                ? apr.executantes
+                : [];
+
+            document
+                .getElementById('container-executantes')
+                .replaceChildren();
+
+            if (executantes.length) {
+
+                executantes.forEach(exec => {
+
+                    adicionarExecutante(
+                        String(exec.nome ?? '')
+                    );
+
+                    const bloco = document.querySelector(
+                        '#container-executantes .executante-item:last-child'
+                    );
+
+                    bloco.querySelector('.exec-funcao').value =
+                        String(exec.funcao ?? '');
+
+                    bloco.querySelector('.exec-matricula').value =
+                        String(exec.matricula ?? '');
+
+                });
+
+            } else {
+
+                adicionarExecutante(user.name);
+
+            }
+
+            definirDataAtual();
+
+            if (!clienteDisponivel) {
+
+                mostrarAlerta(
+                    'Dados recuperados. O cliente anterior não está disponível: selecione um cliente.',
+                    'erro'
+                );
+
+                return;
+
+            }
+
+            mostrarAlerta(
+                'Dados recuperados. Confira as informações antes de salvar a nova APR.'
+            );
+
+        }
+
+
+        // ==========================================
+        // GERENCIAMENTO DE CLIENTES
+        // ==========================================
+
+        async function carregarClientes() {
+
+            try {
+
+                const resp = await requisitar('/clientes');
+
+                if (!resp.ok) {
+
+                    throw new Error(
+                        'Não foi possível carregar os clientes.'
+                    );
+
+                }
+
+                const clientes = await resp.json();
+
+                if (!Array.isArray(clientes)) {
+
+                    throw new Error(
+                        'Formato inválido na listagem de clientes.'
+                    );
+
+                }
+
+                listaClientes = clientes;
+
+                const select =
+                    document.getElementById('cliente_id');
+
+                const selecaoAnterior = select.value;
+
+                select.replaceChildren(
+                    new Option('Selecione um cliente...', '')
+                );
+
+                clientes.forEach(c => {
+
+                    const id = Number(c.id);
+
+                    if (!Number.isSafeInteger(id) || id <= 0) {
+                        return;
+                    }
+
+                    const opt = document.createElement('option');
+
+                    opt.value = String(id);
+
+                    opt.textContent =
+                        `${c.nome} (${c.cidade}/${c.estado})`;
+
+                    select.appendChild(opt);
+
+                });
+
+                if (
+                    Array.from(select.options).some(
+                        op => op.value === selecaoAnterior
+                    )
+                ) {
+                    select.value = selecaoAnterior;
+                }
+
+                return true;
+
+            } catch (e) {
+
+                mostrarAlerta(
+                    e.message || 'Erro ao carregar clientes.',
+                    'erro'
+                );
+
+                return false;
+
+            }
+
+        }
+
+        async function garantirClienteSenai() {
+
+            try {
+
                 let senai = listaClientes.find(c =>
-                    String(c.nome ?? '').trim().toLowerCase() === CLIENTE_SENAI.nome.toLowerCase()
+
+                    String(c.nome ?? '')
+                        .trim()
+                        .toLowerCase() ===
+                    CLIENTE_SENAI.nome.toLowerCase()
+
                 );
 
                 if (!senai) {
-                    const resp = await fetch(`${API_URL}/clientes`, {
+
+                    const resp = await requisitar('/clientes', {
                         method: 'POST',
-                        headers: headersAuth(),
                         body: JSON.stringify(CLIENTE_SENAI)
                     });
-                    if (!resp.ok) return;
-                    senai = await resp.json();
-                    await carregarClientes();
+
+                    const dados = await resp.json().catch(() => ({}));
+
+                    if (!resp.ok) {
+
+                        throw new Error(
+                            obterMensagemErro(
+                                dados,
+                                'Não foi possível cadastrar o cliente SENAI.'
+                            )
+                        );
+
+                    }
+
+                    senai = dados;
+
+                    if (!senai.id) {
+
+                        throw new Error(
+                            'O servidor não retornou o cliente SENAI.'
+                        );
+
+                    }
+
+                    const carregados = await carregarClientes();
+
+                    if (!carregados) return;
+
                 }
 
                 clienteSenaiId = String(senai.id);
+
                 selecionarClienteSenai();
-            } catch (e) {}
+
+            } catch (e) {
+
+                mostrarAlerta(
+                    e.message || 'Erro ao configurar o cliente SENAI.',
+                    'erro'
+                );
+
+            }
+
         }
 
         function selecionarClienteSenai() {
+
             const select = document.getElementById('cliente_id');
-            if (clienteSenaiId && Array.from(select.options).some(op => op.value === clienteSenaiId)) {
+
+            if (
+                clienteSenaiId &&
+                Array.from(select.options).some(
+                    op => op.value === clienteSenaiId
+                )
+            ) {
+
                 select.value = clienteSenaiId;
+
             }
-        }
 
-        async function carregarCatalogoRiscos() {
-            try {
-                const resp = await fetch(`${API_URL}/catalogo-riscos`, { headers: headersAuth() });
-                if (resp.ok) {
-                    const dados = await resp.json();
-                    catalogoRiscos = Array.isArray(dados) ? dados : [];
-                }
-            } catch (e) {}
-        }
-
-        let listaClientes = [];
-
-        async function carregarClientes() {
-            try {
-                const resp = await fetch(`${API_URL}/clientes`, { headers: headersAuth() });
-                if (resp.ok) {
-                    const clientes = await resp.json();
-                    listaClientes = Array.isArray(clientes) ? clientes : [];
-                    const select = document.getElementById('cliente_id');
-                    select.innerHTML = '<option value="">Selecione um cliente...</option>';
-                    clientes.forEach(c => {
-                        const opt = document.createElement('option');
-                        opt.value = c.id;
-                        opt.textContent = `${c.nome} (${c.cidade}/${c.estado})`;
-                        select.appendChild(opt);
-                    });
-                }
-            } catch (e) {}
         }
 
         async function cadastrarCliente() {
+
+            const botao =
+                document.getElementById('btn-salvar-cliente');
+
+            if (botao.disabled) return;
+
+            botao.disabled = true;
+
             const payload = {
+
                 nome: document.getElementById('cli-nome').value,
+
                 email: document.getElementById('cli-email').value,
+
                 endereco: document.getElementById('cli-endereco').value,
+
                 numero: document.getElementById('cli-numero').value,
-                complemento: document.getElementById('cli-complemento').value || null,
+
+                complemento:
+                    document.getElementById('cli-complemento').value || null,
+
                 bairro: document.getElementById('cli-bairro').value,
+
                 cidade: document.getElementById('cli-cidade').value,
+
                 estado: document.getElementById('cli-estado').value,
-                tel_residencial: document.getElementById('cli-tel-res').value || null,
-                tel_celular: document.getElementById('cli-tel-cel').value
+
+                tel_residencial:
+                    document.getElementById('cli-tel-res').value || null,
+
+                tel_celular:
+                    document.getElementById('cli-tel-cel').value
+
             };
 
             try {
-                const resp = await fetch(`${API_URL}/clientes`, {
+
+                const resp = await requisitar('/clientes', {
                     method: 'POST',
-                    headers: headersAuth(),
                     body: JSON.stringify(payload)
                 });
 
-                const texto = await resp.text();
-                const dados = texto ? JSON.parse(texto) : {};
+                const dados = await resp.json().catch(() => ({}));
 
                 if (!resp.ok) {
-                    const erro = dados.errors ? Object.values(dados.errors)[0][0] : dados.message;
-                    mostrarAlerta(erro || 'Preencha todos os campos obrigatórios do cliente.', 'erro');
+
+                    mostrarAlerta(
+                        obterMensagemErro(
+                            dados,
+                            'Preencha todos os campos obrigatórios do cliente.'
+                        ),
+                        'erro'
+                    );
+
                     return;
+
                 }
 
                 if (!dados.id) {
-                    mostrarAlerta('O servidor não retornou o cliente salvo. Verifique o ClienteController.', 'erro');
+
+                    mostrarAlerta(
+                        'O servidor não retornou o cliente salvo.',
+                        'erro'
+                    );
+
                     return;
+
                 }
 
-                await carregarClientes();
-                document.getElementById('cliente_id').value = dados.id;
+                const carregados = await carregarClientes();
+
+                if (!carregados) {
+
+                    mostrarAlerta(
+                        'Cliente salvo, mas não foi possível atualizar a lista. Atualize a página.',
+                        'erro'
+                    );
+
+                    return;
+
+                }
+
+                document.getElementById('cliente_id').value =
+                    String(dados.id);
+
                 toggleNovoCliente();
-                mostrarAlerta('Cliente cadastrado e selecionado!');
+
+                mostrarAlerta(
+                    'Cliente cadastrado e selecionado!'
+                );
+
             } catch (e) {
-                mostrarAlerta('Erro ao comunicar com a API ao salvar o cliente.', 'erro');
+
+                mostrarAlerta(
+                    e.message || 'Erro ao salvar o cliente.',
+                    'erro'
+                );
+
+            } finally {
+
+                botao.disabled = false;
+
             }
+
         }
 
-        // Monta opções usando a API DOM: os textos do catálogo não são interpretados como HTML.
+
+        // ==========================================
+        // CATÁLOGO DE RISCOS
+        // ==========================================
+
+        async function carregarCatalogoRiscos() {
+
+            try {
+
+                const resp = await requisitar('/catalogo-riscos');
+
+                if (!resp.ok) {
+
+                    throw new Error(
+                        'Não foi possível carregar o catálogo de riscos.'
+                    );
+
+                }
+
+                const dados = await resp.json();
+
+                catalogoRiscos = Array.isArray(dados)
+                    ? dados
+                    : [];
+
+            } catch (e) {
+
+                mostrarAlerta(
+                    e.message || 'Erro ao carregar o catálogo.',
+                    'erro'
+                );
+
+            }
+
+        }
+
         function preencherOpcoesCatalogo(select) {
+
             const inicial = document.createElement('option');
+
             inicial.value = '';
-            inicial.textContent = '-- Selecione um risco/EPI pronto para preencher automaticamente --';
+
+            inicial.textContent =
+                '-- Selecione um risco/EPI pronto para preencher automaticamente --';
+
             select.replaceChildren(inicial);
 
             catalogoRiscos.forEach(item => {
+
                 const id = Number(item.id);
-                if (!Number.isSafeInteger(id) || id <= 0) return;
+
+                if (!Number.isSafeInteger(id) || id <= 0) {
+                    return;
+                }
 
                 const opcao = document.createElement('option');
+
                 opcao.value = String(id);
-                opcao.textContent = `[${item.categoria ?? ''}] ${item.descricao_etapa ?? ''}`;
+
+                opcao.textContent =
+                    `[${item.categoria ?? ''}] ${item.descricao_etapa ?? ''}`;
+
                 select.appendChild(opcao);
+
             });
-        }
 
-        function adicionarEtapa() {
-            const container = document.getElementById('container-etapas');
-            const num = container.children.length + 1;
-
-            const div = document.createElement('div');
-            div.className = 'bloco-item etapa-item';
-            div.innerHTML = `
-                <div class="bloco-topo">
-                    <strong class="titulo-etapa">Etapa</strong>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removerBloco(this, 'etapa')">Remover</button>
-                </div>
-
-                <div class="catalogo-box">
-                    <label>Automação: Preencher Riscos e EPIs do Catálogo</label>
-                    <select class="select-catalogo" onchange="aplicarModeloRisco(this)"></select>
-                </div>
-
-                <div class="form-group">
-                    <label>Descrição da Etapa *</label>
-                    <input type="text" class="etapa-descricao" required placeholder="Descreva o passo da atividade">
-                </div>
-
-                <div class="grid-2">
-                    <div class="form-group">
-                        <label>Riscos Envolvidos *</label>
-                        <textarea rows="3" class="etapa-riscos" required placeholder="Riscos identificados nesta etapa"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>EPIs Obrigatórios e Medidas de Controle *</label>
-                        <textarea rows="3" class="etapa-medidas" required placeholder="EPIs e medidas preventivas"></textarea>
-                    </div>
-                </div>
-            `;
-            div.querySelector('.titulo-etapa').textContent = `Etapa ${num}`;
-            preencherOpcoesCatalogo(div.querySelector('.select-catalogo'));
-            container.appendChild(div);
         }
 
         function aplicarModeloRisco(selectEl) {
+
             const idSelecionado = Number(selectEl.value);
+
             if (!idSelecionado) return;
 
-            const modelo = catalogoRiscos.find(r => r.id === idSelecionado);
+            const modelo = catalogoRiscos.find(
+                r => Number(r.id) === idSelecionado
+            );
+
             if (!modelo) return;
 
             const bloco = selectEl.closest('.etapa-item');
-            bloco.querySelector('.etapa-descricao').value = modelo.descricao_etapa;
-            bloco.querySelector('.etapa-riscos').value = modelo.riscos_envolvidos;
-            bloco.querySelector('.etapa-medidas').value = modelo.epis_medidas_controle;
+
+            bloco.querySelector('.etapa-descricao').value =
+                String(modelo.descricao_etapa ?? '');
+
+            bloco.querySelector('.etapa-riscos').value =
+                String(modelo.riscos_envolvidos ?? '');
+
+            bloco.querySelector('.etapa-medidas').value =
+                String(modelo.epis_medidas_controle ?? '');
+
+        }
+
+
+        // ==========================================
+        // ETAPAS E EXECUTANTES
+        // ==========================================
+
+        function adicionarEtapa() {
+
+            const container =
+                document.getElementById('container-etapas');
+
+            const num = container.children.length + 1;
+
+            const div = document.createElement('div');
+
+            div.className = 'bloco-item etapa-item';
+
+            // HTML fixo, sem interpolação de dados externos.
+
+            div.innerHTML = `
+                <div class="bloco-topo">
+
+                    <strong class="titulo-etapa">Etapa</strong>
+
+                    <button
+                        type="button"
+                        class="btn btn-danger btn-sm"
+                        onclick="removerBloco(this, 'etapa')"
+                    >
+                        Remover
+                    </button>
+
+                </div>
+
+                <div class="catalogo-box">
+
+                    <label>
+                        Automação: Preencher Riscos e EPIs do Catálogo
+                    </label>
+
+                    <select
+                        class="select-catalogo"
+                        onchange="aplicarModeloRisco(this)"
+                    ></select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Descrição da Etapa *</label>
+
+                    <input
+                        type="text"
+                        class="etapa-descricao"
+                        required
+                        placeholder="Descreva o passo da atividade"
+                    >
+
+                </div>
+
+                <div class="grid-2">
+
+                    <div class="form-group">
+
+                        <label>Riscos Envolvidos *</label>
+
+                        <textarea
+                            rows="3"
+                            class="etapa-riscos"
+                            required
+                            placeholder="Riscos identificados nesta etapa"
+                        ></textarea>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>
+                            EPIs Obrigatórios e Medidas de Controle *
+                        </label>
+
+                        <textarea
+                            rows="3"
+                            class="etapa-medidas"
+                            required
+                            placeholder="EPIs e medidas preventivas"
+                        ></textarea>
+
+                    </div>
+
+                </div>
+            `;
+
+            div.querySelector('.titulo-etapa').textContent =
+                `Etapa ${num}`;
+
+            preencherOpcoesCatalogo(
+                div.querySelector('.select-catalogo')
+            );
+
+            container.appendChild(div);
+
         }
 
         function adicionarExecutante(nomePadrao = '') {
-            const container = document.getElementById('container-executantes');
+
+            const container =
+                document.getElementById('container-executantes');
+
             const div = document.createElement('div');
+
             div.className = 'bloco-item executante-item';
+
+            // HTML fixo, sem dados externos.
+
             div.innerHTML = `
                 <div class="bloco-topo">
+
                     <strong>Executante</strong>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removerBloco(this, 'executante')">Remover</button>
+
+                    <button
+                        type="button"
+                        class="btn btn-danger btn-sm"
+                        onclick="removerBloco(this, 'executante')"
+                    >
+                        Remover
+                    </button>
+
                 </div>
+
                 <div class="grid-3">
+
                     <div class="form-group">
+
                         <label>Nome Completo *</label>
-                        <input type="text" class="exec-nome" required placeholder="Nome do aluno/executante">
+
+                        <input
+                            type="text"
+                            class="exec-nome"
+                            required
+                            placeholder="Nome do aluno/executante"
+                        >
+
                     </div>
+
                     <div class="form-group">
+
                         <label>Função *</label>
-                        <input type="text" class="exec-funcao" required placeholder="Ex: Aluno / Eletricista">
+
+                        <input
+                            type="text"
+                            class="exec-funcao"
+                            required
+                            placeholder="Ex: Aluno / Eletricista"
+                        >
+
                     </div>
+
                     <div class="form-group">
+
                         <label>Matrícula / RA (opcional)</label>
-                        <input type="text" class="exec-matricula" placeholder="Ex: 20261045">
+
+                        <input
+                            type="text"
+                            class="exec-matricula"
+                            placeholder="Ex: 20261045"
+                        >
+
                     </div>
+
                 </div>
             `;
-            // Não interpolar nome do usuário dentro de um atributo HTML.
-            div.querySelector('.exec-nome').value = String(nomePadrao ?? '');
+
+            div.querySelector('.exec-nome').value =
+                String(nomePadrao ?? '');
+
             container.appendChild(div);
+
         }
 
         function removerBloco(btn, tipo) {
-            const selector = tipo === 'etapa' ? '.etapa-item' : '.executante-item';
+
+            const selector = tipo === 'etapa'
+                ? '.etapa-item'
+                : '.executante-item';
+
             if (document.querySelectorAll(selector).length <= 1) {
-                mostrarAlerta(`A APR precisa ter pelo menos 1 ${tipo}.`, 'erro');
+
+                mostrarAlerta(
+                    `A APR precisa ter pelo menos 1 ${tipo}.`,
+                    'erro'
+                );
+
                 return;
+
             }
+
             btn.closest('.bloco-item').remove();
 
             if (tipo === 'etapa') {
-                document.querySelectorAll('.titulo-etapa').forEach((el, idx) => {
-                    el.textContent = `Etapa ${idx + 1}`;
-                });
+
+                document.querySelectorAll('.titulo-etapa')
+                    .forEach((el, idx) => {
+
+                        el.textContent = `Etapa ${idx + 1}`;
+
+                    });
+
             }
+
         }
 
+
+        // ==========================================
+        // CRIAÇÃO DE APR
+        // ==========================================
+
         async function salvarApr(event) {
+
             event.preventDefault();
 
-            const etapas = Array.from(document.querySelectorAll('.etapa-item')).map((el, idx) => ({
+            if (!user || redirecionando) return;
+
+            const botao =
+                document.getElementById('btn-salvar-apr');
+
+            if (botao.disabled) return;
+
+            botao.disabled = true;
+
+            const etapas = Array.from(
+
+                document.querySelectorAll('.etapa-item')
+
+            ).map((el, idx) => ({
+
                 numero_etapa: idx + 1,
-                descricao: el.querySelector('.etapa-descricao').value,
-                riscos_envolvidos: el.querySelector('.etapa-riscos').value,
-                medidas_controle: el.querySelector('.etapa-medidas').value
+
+                descricao:
+                    el.querySelector('.etapa-descricao').value,
+
+                riscos_envolvidos:
+                    el.querySelector('.etapa-riscos').value,
+
+                medidas_controle:
+                    el.querySelector('.etapa-medidas').value
+
             }));
 
-            const executantes = Array.from(document.querySelectorAll('.executante-item')).map(el => ({
+            const executantes = Array.from(
+
+                document.querySelectorAll('.executante-item')
+
+            ).map(el => ({
+
                 nome: el.querySelector('.exec-nome').value,
+
                 funcao: el.querySelector('.exec-funcao').value,
-                matricula: el.querySelector('.exec-matricula').value.trim() || null
+
+                matricula:
+                    el.querySelector('.exec-matricula').value.trim() || null
+
             }));
 
             const payload = {
-                cliente_id: document.getElementById('cliente_id').value,
-                local: document.getElementById('local').value,
-                atividade: document.getElementById('atividade').value,
-                responsavel_nome: document.getElementById('responsavel_nome').value,
-                responsavel_crea: document.getElementById('responsavel_crea').value.trim() || null,
-                data_emissao: document.getElementById('data_emissao').value,
+
+                cliente_id:
+                    document.getElementById('cliente_id').value,
+
+                local:
+                    document.getElementById('local').value,
+
+                atividade:
+                    document.getElementById('atividade').value,
+
+                responsavel_nome:
+                    document.getElementById('responsavel_nome').value,
+
+                responsavel_crea:
+                    document.getElementById('responsavel_crea').value.trim() || null,
+
+                data_emissao:
+                    document.getElementById('data_emissao').value,
+
                 etapas,
+
                 executantes
+
             };
 
             try {
-                const resp = await fetch(`${API_URL}/aprs`, {
+
+                const resp = await requisitar('/aprs', {
                     method: 'POST',
-                    headers: headersAuth(),
                     body: JSON.stringify(payload)
                 });
 
-                const texto = await resp.text();
-                const dados = texto ? JSON.parse(texto) : {};
+                const dados = await resp.json().catch(() => ({}));
 
                 if (!resp.ok) {
-                    const erro = dados.errors ? Object.values(dados.errors)[0][0] : dados.message;
-                    mostrarAlerta(erro || 'Erro ao salvar APR.', 'erro');
+
+                    mostrarAlerta(
+                        obterMensagemErro(
+                            dados,
+                            'Erro ao salvar APR.'
+                        ),
+                        'erro'
+                    );
+
                     return;
+
                 }
 
                 mostrarAlerta('APR salva com sucesso!');
+
                 document.getElementById('form-apr').reset();
+
                 selecionarClienteSenai();
+
                 document.getElementById('historico_apr').value = '';
-                document.getElementById('data_emissao').valueAsDate = new Date();
-                document.getElementById('container-etapas').innerHTML = '';
-                document.getElementById('container-executantes').innerHTML = '';
+
+                definirDataAtual();
+
+                document
+                    .getElementById('container-etapas')
+                    .replaceChildren();
+
+                document
+                    .getElementById('container-executantes')
+                    .replaceChildren();
+
                 adicionarEtapa();
+
                 adicionarExecutante(user.name);
-                alternarFormularioApr();
-                carregarAprs();
+
+                document
+                    .getElementById('secao-nova-apr')
+                    .classList.add('hidden');
+
+                await carregarAprs();
+
             } catch (e) {
-                mostrarAlerta('Erro ao comunicar com a API ao salvar a APR.', 'erro');
+
+                mostrarAlerta(
+                    e.message || 'Erro ao salvar a APR.',
+                    'erro'
+                );
+
+            } finally {
+
+                botao.disabled = false;
+
             }
+
         }
 
-        async function carregarAprs() {
-            const lista = document.getElementById('lista-aprs');
-            try {
-                const resp = await fetch(`${API_URL}/aprs`, { headers: headersAuth() });
 
-                if (resp.status === 401) {
-                    sair();
-                    return;
+        // ==========================================
+        // LISTAGEM DE APRS
+        // ==========================================
+
+        async function carregarAprs() {
+
+            const lista = document.getElementById('lista-aprs');
+
+            try {
+
+                const resp = await requisitar('/aprs', {
+                    method: 'GET',
+                    cache: 'no-store'
+                });
+
+                if (!resp.ok) {
+
+                    throw new Error(
+                        `Erro HTTP ${resp.status} ao carregar APRs.`
+                    );
+
                 }
-                if (!resp.ok) throw new Error(`Erro HTTP ${resp.status}`);
 
                 const aprs = await resp.json();
-                if (!Array.isArray(aprs)) throw new Error('Formato de resposta inválido.');
+
+                if (!Array.isArray(aprs)) {
+
+                    throw new Error(
+                        'Formato de resposta inválido.'
+                    );
+
+                }
 
                 atualizarHistoricoAprs(aprs);
 
                 if (!aprs.length) {
+
                     const mensagem = document.createElement('p');
+
                     mensagem.style.color = '#6b7280';
-                    mensagem.textContent = 'Você ainda não possui APRs cadastradas. Clique em + Nova APR para começar.';
+
+                    mensagem.textContent =
+                        'Você ainda não possui APRs cadastradas. Clique em + Nova APR para começar.';
+
                     lista.replaceChildren(mensagem);
+
                     return;
+
                 }
 
                 const tabela = document.createElement('table');
+
                 const cabecalho = document.createElement('thead');
-                // HTML fixo, controlado pelo próprio código: sem dados de usuários.
-                cabecalho.innerHTML = '<tr><th>#</th><th>Data</th><th>Cliente</th><th>Atividade</th><th>Local</th><th>Ações</th></tr>';
+
+                // HTML estático, sem dados de usuários.
+
+                cabecalho.innerHTML = `
+                    <tr>
+                        <th>#</th>
+                        <th>Data</th>
+                        <th>Cliente</th>
+                        <th>Atividade</th>
+                        <th>Local</th>
+                        <th>Ações</th>
+                    </tr>
+                `;
+
                 const corpo = document.createElement('tbody');
 
                 aprs.forEach(apr => {
-                    const id = Number(apr.id);
-                    if (!Number.isSafeInteger(id) || id <= 0) return;
 
-                    const data = String(apr.data_emissao ?? '').split('T')[0];
-                    const dataFormatada = /^\d{4}-\d{2}-\d{2}$/.test(data)
-                        ? data.split('-').reverse().join('/')
-                        : '-';
+                    const id = Number(apr.id);
+
+                    if (!Number.isSafeInteger(id) || id <= 0) {
+                        return;
+                    }
+
+                    const data = String(
+                        apr.data_emissao ?? ''
+                    ).split('T')[0];
+
+                    const dataFormatada =
+                        /^\d{4}-\d{2}-\d{2}$/.test(data)
+
+                            ? data.split('-').reverse().join('/')
+
+                            : '-';
 
                     const linha = document.createElement('tr');
+
                     const valores = [
+
                         id,
+
                         dataFormatada,
+
                         apr.cliente?.nome ?? '-',
+
                         apr.atividade ?? '',
+
                         apr.local ?? ''
+
                     ];
 
                     valores.forEach(valor => {
-                        const celula = document.createElement('td');
-                        // textContent impede que dados cadastrados executem HTML/JS.
+
+                        const celula =
+                            document.createElement('td');
+
+                        // Impede interpretação de HTML externo.
+
                         celula.textContent = String(valor);
+
                         linha.appendChild(celula);
+
                     });
 
                     const acoes = document.createElement('td');
+
                     acoes.className = 'acoes-tabela';
 
+
+                    // Botão de impressão.
+
                     const imprimir = document.createElement('a');
-                    imprimir.href = `imprimir.html?id=${encodeURIComponent(id)}`;
+
+                    imprimir.href =
+                        `imprimir.html?id=${encodeURIComponent(id)}`;
+
                     imprimir.target = '_blank';
+
                     imprimir.rel = 'noopener noreferrer';
+
                     imprimir.className = 'btn btn-primary btn-sm';
+
                     imprimir.textContent = 'Gerar PDF';
 
+
+                    // Botão de exclusão.
+
                     const excluir = document.createElement('button');
+
                     excluir.type = 'button';
+
                     excluir.className = 'btn btn-danger btn-sm';
+
                     excluir.textContent = 'Excluir';
-                    excluir.addEventListener('click', () => excluirApr(id));
+
+                    excluir.addEventListener('click', () => {
+
+                        excluirApr(id, excluir);
+
+                    });
 
                     acoes.append(imprimir, excluir);
+
                     linha.appendChild(acoes);
+
                     corpo.appendChild(linha);
+
                 });
 
                 tabela.append(cabecalho, corpo);
+
                 lista.replaceChildren(tabela);
+
             } catch (e) {
+
+                if (redirecionando) return;
+
                 atualizarHistoricoAprs([]);
+
                 const mensagem = document.createElement('p');
+
                 mensagem.style.color = '#dc2626';
-                mensagem.textContent = 'Erro ao carregar APRs. Verifique se o servidor Laravel está rodando.';
+
+                mensagem.textContent =
+                    e.message || 'Erro ao carregar APRs.';
+
                 lista.replaceChildren(mensagem);
+
             }
+
         }
 
-        async function excluirApr(id) {
-            if (!confirm('Deseja realmente excluir esta APR?')) return;
 
-            const resp = await fetch(`${API_URL}/aprs/${id}`, {
-                method: 'DELETE',
-                headers: headersAuth()
-            });
+        // ==========================================
+        // EXCLUSÃO DE APR
+        // ==========================================
 
-            if (resp.ok) {
-                mostrarAlerta('APR excluída.');
-                carregarAprs();
+        async function excluirApr(id, botao = null) {
+
+            if (!Number.isSafeInteger(id) || id <= 0) return;
+
+            if (exclusoesEmAndamento.has(id)) return;
+
+            if (!confirm('Deseja realmente excluir esta APR?')) {
+
+                return;
+
             }
+
+            exclusoesEmAndamento.add(id);
+
+            if (botao) botao.disabled = true;
+
+            try {
+
+                const resp = await requisitar(`/aprs/${id}`, {
+
+                    method: 'DELETE'
+
+                });
+
+                if (!resp.ok) {
+
+                    const dados = await resp.json().catch(() => ({}));
+
+                    mostrarAlerta(
+                        obterMensagemErro(
+                            dados,
+                            'Não foi possível excluir a APR.'
+                        ),
+                        'erro'
+                    );
+
+                    return;
+
+                }
+
+                mostrarAlerta('APR excluída.');
+
+                await carregarAprs();
+
+            } catch (e) {
+
+                mostrarAlerta(
+                    e.message || 'Erro ao excluir a APR.',
+                    'erro'
+                );
+
+            } finally {
+
+                exclusoesEmAndamento.delete(id);
+
+                if (botao) botao.disabled = false;
+
+            }
+
+        }
+
+
+        // ==========================================
+        // INICIALIZAÇÃO DO DASHBOARD
+        // ==========================================
+
+        async function inicializar() {
+
+            try {
+
+                // Verifica a sessão antes de carregar dados privados.
+
+                await verificarSessao();
+
+                if (redirecionando) return;
+
+                definirDataAtual();
+
+                const resultados = await Promise.all([
+
+                    carregarCatalogoRiscos(),
+
+                    carregarClientes(),
+
+                    carregarAprs()
+
+                ]);
+
+                if (redirecionando) return;
+
+                const clientesCarregados = resultados[1];
+
+                // Evita criar outro cliente SENAI caso a
+                // listagem de clientes tenha falhado.
+
+                if (clientesCarregados) {
+
+                    await garantirClienteSenai();
+
+                }
+
+                if (redirecionando) return;
+
+                adicionarEtapa();
+
+                adicionarExecutante(user.name);
+
+                document
+                    .getElementById('secao-lista-aprs')
+                    .classList.remove('hidden');
+
+            } catch (e) {
+
+                if (!redirecionando) {
+
+                    mostrarAlerta(
+                        e.message ||
+                        'Não foi possível inicializar o painel.',
+                        'erro'
+                    );
+
+                }
+
+            }
+
         }
 
         inicializar();
+
     </script>
+
 </body>
 </html>

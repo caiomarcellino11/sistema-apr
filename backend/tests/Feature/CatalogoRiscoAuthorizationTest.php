@@ -187,7 +187,7 @@ class CatalogoRiscoAuthorizationTest extends TestCase
         $this->postJson('/api/register', [
             'name' => 'Aluno Teste',
             'email' => 'aluno@example.com',
-            'password' => 'SenhaTeste123',
+            'password' => 'Frase de teste 2026!',
         ])->assertCreated()
           ->assertJsonPath('user.role', User::ROLE_ALUNO);
 
@@ -203,7 +203,7 @@ class CatalogoRiscoAuthorizationTest extends TestCase
         $this->postJson('/api/register', [
             'name' => 'Usuario Teste',
             'email' => 'usuario@example.com',
-            'password' => 'SenhaTeste123',
+            'password' => 'Frase de teste 2026!',
             'role' => 'admin',
         ])->assertUnprocessable()
           ->assertJsonValidationErrors(['role']);

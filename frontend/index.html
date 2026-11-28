@@ -1,138 +1,531 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>Sistema APR - Acesso do Aluno</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
     <header class="topbar">
-        <div class="marca">
-            <img src="img/logo-senai.png" alt="SENAI" class="logo-senai">
-            <h1>Sistema de Análise Preliminar de Risco (APR)</h1>
-        </div>
+        <h1>Sistema de Análise Preliminar de Risco (APR)</h1>
     </header>
 
     <main class="container">
+
         <div class="card auth-wrapper">
+
+            <!-- Abas de autenticação -->
             <div class="tabs">
-                <button type="button" class="tab-btn active" id="tab-login" onclick="alternarAba('login')">Entrar</button>
-                <button type="button" class="tab-btn" id="tab-register" onclick="alternarAba('register')">Criar Conta</button>
+
+                <button
+                    type="button"
+                    class="tab-btn active"
+                    id="tab-login"
+                    onclick="alternarAba('login')"
+                >
+                    Entrar
+                </button>
+
+                <button
+                    type="button"
+                    class="tab-btn"
+                    id="tab-register"
+                    onclick="alternarAba('register')"
+                >
+                    Criar Conta
+                </button>
+
             </div>
 
-            <div id="mensagem" class="alerta"></div>
+            <!-- Mensagens do sistema -->
+            <div
+                id="mensagem"
+                class="alerta"
+                role="alert"
+                aria-live="polite"
+            ></div>
 
             <!-- Formulário de Login -->
-            <form id="form-login" onsubmit="fazerLogin(event)">
+            <form
+                id="form-login"
+                onsubmit="fazerLogin(event)"
+            >
+
                 <div class="form-group">
+
                     <label for="login-email">E-mail</label>
-                    <input type="email" id="login-email" required placeholder="aluno@senai.br">
+
+                    <input
+                        type="email"
+                        id="login-email"
+                        autocomplete="email"
+                        required
+                        placeholder="aluno@senai.br"
+                    >
+
                 </div>
+
                 <div class="form-group">
+
                     <label for="login-password">Senha</label>
-                    <input type="password" id="login-password" required placeholder="Sua senha">
+
+                    <input
+                        type="password"
+                        id="login-password"
+                        autocomplete="current-password"
+                        required
+                        placeholder="Sua senha"
+                    >
+
                 </div>
-                <button type="submit" class="btn btn-primary btn-full">Acessar Minhas APRs</button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-full"
+                    disabled
+                >
+                    Acessar Minhas APRs
+                </button>
+
             </form>
 
             <!-- Formulário de Cadastro -->
-            <form id="form-register" class="hidden" onsubmit="fazerCadastro(event)">
+            <form
+                id="form-register"
+                class="hidden"
+                onsubmit="fazerCadastro(event)"
+            >
+
                 <div class="form-group">
-                    <label for="reg-name">Nome Completo do Aluno</label>
-                    <input type="text" id="reg-name" required placeholder="Ex: Nome">
+
+                    <label for="reg-name">
+                        Nome Completo do Aluno
+                    </label>
+
+                    <input
+                        type="text"
+                        id="reg-name"
+                        maxlength="255"
+                        autocomplete="name"
+                        required
+                        placeholder="Ex: Nome"
+                    >
+
                 </div>
+
                 <div class="form-group">
+
                     <label for="reg-email">E-mail</label>
-                    <input type="email" id="reg-email" required placeholder="aluno@senai.br">
+
+                    <input
+                        type="email"
+                        id="reg-email"
+                        maxlength="255"
+                        autocomplete="email"
+                        required
+                        placeholder="aluno@senai.br"
+                    >
+
                 </div>
+
                 <div class="form-group">
-                    <label for="reg-password">Senha (mínimo 6 caracteres)</label>
-                    <input type="password" id="reg-password" minlength="6" required placeholder="Crie uma senha">
+
+                    <label for="reg-password">
+                        Senha (15 a 64 caracteres)
+                    </label>
+
+                    <input
+                        type="password"
+                        id="reg-password"
+                        minlength="15"
+                        maxlength="64"
+                        autocomplete="new-password"
+                        aria-describedby="senha-ajuda"
+                        required
+                        placeholder="Crie uma senha segura"
+                    >
+
+                    <small id="senha-ajuda">
+                        Utilize uma frase longa e fácil de lembrar.
+                    </small>
+
                 </div>
-                <button type="submit" class="btn btn-primary btn-full">Cadastrar e Entrar</button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-full"
+                    disabled
+                >
+                    Cadastrar e Entrar
+                </button>
+
             </form>
+
         </div>
+
     </main>
 
-    <script>
-        const API_URL = 'http://127.0.0.1:8000/api';
+    <!-- Serviço centralizado da API -->
+    <script src="js/api.js"></script>
 
-        // Se já estiver logado, vai direto para o painel
-        if (localStorage.getItem('apr_token')) {
-            window.location.href = 'dashboard.html';
+    <script>
+
+        'use strict';
+
+        let autenticando = false;
+
+        /**
+         * Remove as informações da antiga autenticação.
+         */
+        function limparAutenticacaoAntiga() {
+
+            try {
+                localStorage.removeItem('apr_token');
+                localStorage.removeItem('apr_user');
+            } catch {
+                // A nova autenticação não depende do localStorage.
+            }
+
         }
 
+        /**
+         * Alterna entre as abas de login e cadastro.
+         */
         function alternarAba(aba) {
+
+            limparMensagem();
+
+            document
+                .getElementById('tab-login')
+                .classList.toggle('active', aba === 'login');
+
+            document
+                .getElementById('tab-register')
+                .classList.toggle('active', aba === 'register');
+
+            document
+                .getElementById('form-login')
+                .classList.toggle('hidden', aba !== 'login');
+
+            document
+                .getElementById('form-register')
+                .classList.toggle('hidden', aba !== 'register');
+
+        }
+
+        /**
+         * Limpa as mensagens anteriores.
+         */
+        function limparMensagem() {
+
             const msg = document.getElementById('mensagem');
+
             msg.className = 'alerta';
             msg.textContent = '';
 
-            document.getElementById('tab-login').classList.toggle('active', aba === 'login');
-            document.getElementById('tab-register').classList.toggle('active', aba === 'register');
-            document.getElementById('form-login').classList.toggle('hidden', aba !== 'login');
-            document.getElementById('form-register').classList.toggle('hidden', aba !== 'register');
         }
 
+        /**
+         * Exibe mensagens sem interpretar HTML.
+         */
         function exibirErro(texto) {
+
             const msg = document.getElementById('mensagem');
+
             msg.className = 'alerta erro';
             msg.textContent = texto;
+
         }
 
+        /**
+         * Habilita ou desabilita os botões dos formulários.
+         */
+        function bloquearFormularios(bloqueado) {
+
+            document.querySelectorAll(
+                '#form-login button[type="submit"], ' +
+                '#form-register button[type="submit"]'
+            ).forEach(botao => {
+                botao.disabled = bloqueado;
+            });
+
+        }
+
+        /**
+         * Verifica se o navegador possui uma sessão autenticada.
+         */
+        async function verificarSessao() {
+
+            limparAutenticacaoAntiga();
+
+            const parametros = new URLSearchParams(
+                window.location.search
+            );
+
+            try {
+
+                const resp = await AprApi.request('/user', {
+                    method: 'GET',
+                    redirectOnUnauthorized: false
+                });
+
+                if (resp.ok) {
+
+                    window.location.replace('dashboard.html');
+
+                    return;
+
+                }
+
+                if (resp.status !== 401 && resp.status !== 419) {
+
+                    exibirErro(
+                        'Não foi possível verificar a sessão.'
+                    );
+
+                    return;
+
+                }
+
+                if (parametros.get('session') === 'expired') {
+
+                    exibirErro(
+                        'Sua sessão expirou. Entre novamente.'
+                    );
+
+                }
+
+            } catch {
+
+                exibirErro(
+                    'Não foi possível conectar ao servidor Laravel. ' +
+                    'Verifique se o servidor está em execução.'
+                );
+
+            } finally {
+
+                bloquearFormularios(false);
+
+            }
+
+        }
+
+        /**
+         * Processa as mensagens de erro da API.
+         */
+        function tratarErroAutenticacao(resp, dados, mensagemPadrao) {
+
+            if (resp.status === 419) {
+
+                exibirErro(
+                    'A sessão de segurança expirou. Tente novamente.'
+                );
+
+                return;
+
+            }
+
+            if (resp.status === 429) {
+
+                exibirErro(
+                    'Muitas tentativas. Aguarde antes de tentar novamente.'
+                );
+
+                return;
+
+            }
+
+            if (resp.status >= 500) {
+
+                exibirErro(
+                    'O servidor apresentou um erro. Tente novamente.'
+                );
+
+                return;
+
+            }
+
+            const primeiroErro = dados.errors
+                ? Object.values(dados.errors)[0]?.[0]
+                : null;
+
+            exibirErro(
+                primeiroErro || dados.message || mensagemPadrao
+            );
+
+        }
+
+        /**
+         * Centraliza o login e o cadastro por sessão.
+         */
+        async function autenticar(endpoint, payload, mensagemPadrao) {
+
+            if (autenticando) {
+                return;
+            }
+
+            autenticando = true;
+
+            bloquearFormularios(true);
+            limparMensagem();
+
+            try {
+
+                const resp = await AprApi.request(endpoint, {
+                    method: 'POST',
+                    redirectOnUnauthorized: false,
+                    body: JSON.stringify(payload)
+                });
+
+                const dados = await resp.json().catch(() => ({}));
+
+                if (!resp.ok) {
+
+                    tratarErroAutenticacao(
+                        resp,
+                        dados,
+                        mensagemPadrao
+                    );
+
+                    return;
+
+                }
+
+                // Garante que o Back-End utilizou autenticação por sessão.
+                if (dados.tipo_autenticacao !== 'session') {
+
+                    exibirErro(
+                        'Não foi possível estabelecer uma sessão segura.'
+                    );
+
+                    return;
+
+                }
+
+                // Confirma que a sessão realmente funciona.
+                const sessao = await AprApi.request('/user', {
+                    method: 'GET',
+                    redirectOnUnauthorized: false
+                });
+
+                if (!sessao.ok) {
+
+                    exibirErro(
+                        'Não foi possível validar a sessão autenticada.'
+                    );
+
+                    return;
+
+                }
+
+                // Nenhum token é armazenado pelo JavaScript.
+                window.location.replace('dashboard.html');
+
+            } catch {
+
+                exibirErro(
+                    'Não foi possível concluir a autenticação. ' +
+                    'Verifique se o servidor Laravel está em execução.'
+                );
+
+            } finally {
+
+                autenticando = false;
+
+                bloquearFormularios(false);
+
+            }
+
+        }
+
+        /**
+         * Realiza o login do usuário.
+         */
         async function fazerLogin(event) {
+
             event.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
 
-            try {
-                const resp = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const dados = await resp.json();
+            const email = document
+                .getElementById('login-email').value;
 
-                if (!resp.ok) {
-                    exibirErro(dados.message || 'E-mail ou senha inválidos.');
-                    return;
-                }
+            const password = document
+                .getElementById('login-password').value;
 
-                localStorage.setItem('apr_token', dados.token);
-                localStorage.setItem('apr_user', JSON.stringify(dados.user));
-                window.location.href = 'dashboard.html';
-            } catch (e) {
-                exibirErro('Não foi possível conectar ao servidor Laravel (verifique se php artisan serve está rodando).');
-            }
+            await autenticar(
+                '/login',
+                {
+                    email,
+                    password
+                },
+                'E-mail ou senha inválidos.'
+            );
+
         }
 
+        /**
+         * Realiza o cadastro de um novo usuário.
+         */
         async function fazerCadastro(event) {
+
             event.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
 
-            try {
-                const resp = await fetch(`${API_URL}/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
-                });
-                const dados = await resp.json();
+            const name = document
+                .getElementById('reg-name').value;
 
-                if (!resp.ok) {
-                    const primeiroErro = dados.errors ? Object.values(dados.errors)[0][0] : dados.message;
-                    exibirErro(primeiroErro || 'Erro ao cadastrar.');
-                    return;
-                }
+            const email = document
+                .getElementById('reg-email').value;
 
-                localStorage.setItem('apr_token', dados.token);
-                localStorage.setItem('apr_user', JSON.stringify(dados.user));
-                window.location.href = 'dashboard.html';
-            } catch (e) {
-                exibirErro('Não foi possível conectar ao servidor Laravel (verifique se php artisan serve está rodando).');
+            const password = document
+                .getElementById('reg-password').value;
+
+            // Validação complementar da política de senhas.
+            const quantidadeCaracteres = Array.from(password).length;
+
+            if (quantidadeCaracteres < 15) {
+
+                exibirErro(
+                    'A senha deve possuir pelo menos 15 caracteres.'
+                );
+
+                return;
+
             }
+
+            if (quantidadeCaracteres > 64) {
+
+                exibirErro(
+                    'A senha deve possuir no máximo 64 caracteres.'
+                );
+
+                return;
+
+            }
+
+            await autenticar(
+                '/register',
+                {
+                    name,
+                    email,
+                    password
+                },
+                'Erro ao cadastrar.'
+            );
+
         }
+
+        // Verifica a sessão ao carregar a página.
+        verificarSessao();
+
     </script>
+
 </body>
+
 </html>
