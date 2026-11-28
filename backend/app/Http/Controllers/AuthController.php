@@ -15,13 +15,20 @@ class AuthController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
+            'role'     => 'missing',
         ]);
 
-        $user = User::create([
+        // Cria o usuário apenas com os campos permitidos.
+        $user = new User([
             'name'     => $dados['name'],
             'email'    => $dados['email'],
             'password' => $dados['password'],
         ]);
+
+        // Todo cadastro público recebe o perfil de aluno.
+        $user->role = User::ROLE_ALUNO;
+
+        $user->save();
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -58,6 +65,8 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['mensagem' => 'Logout realizado com sucesso.']);
+        return response()->json([
+            'mensagem' => 'Logout realizado com sucesso.',
+        ]);
     }
 }
