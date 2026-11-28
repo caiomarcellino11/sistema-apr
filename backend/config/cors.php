@@ -1,5 +1,17 @@
 <?php
 
+$allowedOrigins = array_values(array_unique(array_filter(
+    array_map(
+        'trim',
+        explode(',', (string) env('CORS_ALLOWED_ORIGINS', ''))
+    ),
+    static fn (string $origin): bool =>
+        preg_match(
+            '~^https?://[a-zA-Z0-9.-]+(?::[0-9]{1,5})?$~D',
+            $origin
+        ) === 1
+)));
+
 return [
 
     /*
@@ -31,14 +43,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Origens autorizadas
+    | Origens autorizadas pelo ambiente
     |--------------------------------------------------------------------------
     */
 
-    'allowed_origins' => [
-        'http://127.0.0.1:5500',
-        'http://localhost:5500',
-    ],
+    'allowed_origins' => $allowedOrigins,
 
     'allowed_origins_patterns' => [],
 
