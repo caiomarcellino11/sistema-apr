@@ -4,35 +4,75 @@ use App\Http\Controllers\AprController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CatalogoRiscoController;
 use App\Http\Controllers\ClienteController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
 
-// Rotas públicas
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// ==========================================
+// ROTAS PUBLICAS COM RATE LIMITING
+// ==========================================
 
-// Rotas protegidas por autenticação
+// Protecao contra cadastros excessivos.
+Route::post('/register', [AuthController::class, 'register'])
+    ->middleware('throttle:register');
+
+// Protecao contra tentativas excessivas de login.
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:login');
+
+
+// ==========================================
+// ROTAS PROTEGIDAS POR AUTENTICACAO
+// ==========================================
+
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Informações do usuário e logout
+    // Informacoes do usuario autenticado.
     Route::get('/user', fn (Request $request) => $request->user());
+
+    // Encerramento da autenticacao.
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Gerenciamento de clientes e APRs
-    Route::apiResource('clientes', ClienteController::class);
-    Route::apiResource('aprs', AprController::class);
 
-    // Catálogo: consulta disponível para usuários autenticados
-    Route::apiResource('catalogo-riscos', CatalogoRiscoController::class)
-        ->only(['index', 'show']);
+    // ==========================================
+    // GERENCIAMENTO DE CLIENTES E APRS
+    // ==========================================
 
-    // Catálogo: alterações exclusivas de administradores
-    Route::middleware('role:' . User::ROLE_ADMIN)->group(function () {
+    Route::apiResource(
+        'clientes',
+        ClienteController::class
+    );
 
-        Route::apiResource('catalogo-riscos', CatalogoRiscoController::class)
-            ->only(['store', 'update', 'destroy']);
+    Route::apiResource(
+        'aprs',
+        AprController::class
+    );
 
-    });
+
+    // ==========================================
+    // CATALOGO DE RISCOS - CONSULTA
+    // ==========================================
+
+    // Disponivel para todos os usuarios autenticados.
+    Route::apiResource(
+        'catalogo-riscos',
+        CatalogoRiscoController::class
+    )->only(['index', 'show']);
+
+
+    // ==========================================
+    // CATALOGO DE RISCOS - ADMINISTRACAO
+    // ==========================================
+
+    // Alteracoes exclusivas de administradores.
+    Route::middleware('role:' . User::ROLE_ADMIN)
+        ->group(function () {
+
+            Route::apiResource(
+                'catalogo-riscos',
+                CatalogoRiscoController::class
+            )->only(['store', 'update', 'destroy']);
+
+        });
 
 });
